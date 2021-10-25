@@ -1,162 +1,114 @@
-## :bangbang: TO-DO list after creating repo from template:
+# Xayn UseCase
 
- - [ ] Create new flutter project
- - [ ] [Organizing a library package](https://dart.dev/guides/libraries/create-library-packages#organizing-a-library-package)
- - [ ] Replace all `project_name` with the corrent one in this file
- - [ ] Replace `repo name` with the corrent one in:
-   - [ ] this filein the 
-   - [ ] [contributing](#contributing-construction_worker_woman) `create an issue` link
- - [ ] Remove useless parts of this README
- - [ ] Check license
- - [ ] Specifying a plugin’s supported platforms. More [here](https://flutter.dev/docs/development/packages-and-plugins/developing-packages#plugin-platforms)
- - [ ] Uncomment CI scripts in `.github/workflows` 
-   - [ ] Set the latest `Flutter version` inside all of them
-- [ ] Setup `repository settings` - branch rules, PR reviews, etc. Sadly, but it's not copied from the template repo... 
- - [ ] to enable `codeCov` - please ask Felix to enable it for this repository
- - [ ] Try to keep README page SIMPLE but USEFUL
- - [ ] Chgeck for [PUB POINTS](https://pub.dev/help/scoring#pub-points)
-   - [ ] Follow Dart file conventions(https://pub.dev/help/scoring#follow-dart-file-conventions)  (this one done, but doubel-check it)
-   - [ ] [Provide documentation](https://pub.dev/help/scoring#provide-documentation)
-   - [ ] [Support multiple platforms](https://pub.dev/help/scoring#support-multiple-platforms)
-   - [ ] [Pass static analysis](https://pub.dev/help/scoring#pass-static-analysis)
-   - [ ] [Support up-to-date dependencies](https://pub.dev/help/scoring#support-up-to-date-dependencies)
-   - [ ] [View pub points report](https://pub.dev/help/scoring#calculating-pub-points-prior-to-publishing) before publishing. Make sure we have all possible score :muscle:
- - [ ] Remove this `TODO list` from the ReadMe, when all above are done :wink:
+## What
 
-----------
+`UseCase`s are a common design pattern, mostly popular within the [Android world](https://yoelglus.medium.com/android-and-clean-architecture-the-use-case-interface-8716512f29a1).
 
-# project_name
+They are typically lightweight, and have an `async` interface.
 
-[![Pub](https://img.shields.io/pub/v/project_name.svg)](https://pub.dartlang.org/packages/project_name)
-[![codecov](https://codecov.io/gh/xaynetwork/flutter-open-source-repo-template/branch/main/graph/badge.svg)](https://codecov.io/gh/xaynetwork/flutter-open-source-repo-template)
-[![Build Status](https://github.com/xaynetwork/flutter-open-source-repo-template/actions/workflows/flutter_post_merge.yaml/badge.svg)](https://github.com/xaynetwork/flutter-open-source-repo-template/actions)
+## Classic example
 
-Short description of the project: What, Why, When and How :rofl:
+Let's create a standard `UseCase` for a common problem: updating a `User` through a repository:
 
-
-----------
-
-
-
-## Table of content:
-
- * [Installing :hammer_and_wrench:](#installing-hammer_and_wrench)
- * [How to use :building_construction:](#how-to-use-building_construction)
- * [Visuals :heart_eyes_cat:](#visuals-heart_eyes_cat)
- * [Attributes :gear:](#attributes-gear)
- * [Troubleshooting :thinking:](#troubleshooting-thinking)
- * [Contributing :construction_worker_woman:](#contributing-construction_worker_woman)
- * [License :scroll:](#license-scroll)
-
-----------
-
-
-
-## Installing :hammer_and_wrench:
-
-Add this to your package's `pubspec.yaml` file:
-
-```yaml
-dependencies:
-  project_name: `latest version`
-```
-
-after that, shoot it on the command line:
-
-```css
-$ flutter pub get
-```
-
-----------
-
-
-
-## How to use :building_construction:
-
-Use case #1 (short description)
 ```dart
-	// add some code with ninja-comments here
+class UserUpdateUseCase extends UseCase<User, User> {
+  final UserRepository userRepository;
+
+  UserUpdateUseCase(this.userRepository);
+
+  @override
+  Stream<User> transaction(User user) async* {
+    yield await userRepository.update(SingleIdRepositoryKey(user.uid), user);
+  }
+}
 ```
 
-Use case #2 (short description)
+`UserUpdateUseCase` extends `UseCase`, and the actual operation is handled within the `transaction` override.
+
+This method is actually a `Stream` `Function`, as opposed to a normal `Future` operation, more on that later, but
+the above should already look familiar.
+
+A `UseCase` should however not be used standalone, instead, we want to invoke them solely via a `Bloc`, or a `Cubit`,
+and instead offer simple `onX` handlers as an interface.
+
+Taking this `UseCase` into account, we could create a `Bloc` as following:
+
 ```dart
-	// add some code with ninja-comments here
+class UserBloc extends Cubit<UserState> {
+  final UserUpdateUseCase _userUpdateUseCase;
+
+  UserBloc(
+      this._userUpdateUseCase,
+      ) : super(UserState.empty());
+
+  Future<void> onUserUpdate(User user) async {
+    final result = await _userUpdateUseCase(user);
+    final updatedUser = result.data!;
+
+    emit(state.copyWith(
+      name: updatedUser.name,
+      age: updatedUser.age,
+    ));
+  }
+}
 ```
 
-Use case #3 (short description)
+...this should also look very familiar, we `call` the UseCase via `onUserUpdate` and emit a new `State`
+once we obtain its result.
+
+## Advanced example
+
+Because a Bloc's state is basically the `build` source for a `Widget`, or a `Screen` if you will, we would like to
+avoid unnecessary builds obviously.
+
+Inside a `build` handler, we would setup a `BlocBuilder` for example, and build child `Widget`s from the `state`.
+
+However, we don't always _want_ to follow `state` updates right away. Ideally we need to keep the amount of `Widget` `build` calls
+limited, so let's observe another type of `UseCase`:
+
 ```dart
-	// add some code with ninja-comments here
+class ScrollUpdateUseCase extends UseCase<int, int> {
+  ScrollUpdateUseCase();
+
+  @override
+  Stream<int> transaction(int position) async* {
+    // do something with that position, maybe store it in memory for example
+    // finally, we yield it again:
+    yield position;
+  }
+}
 ```
 
- - please also give a try to the [example app](../main/example/) :stuck_out_tongue_winking_eye:
- - check full [documentation here](../documentation/)
+This particular `UseCase` can be invoked in rapid sequence, basically every time the user effectively scrolls.
+So, this makes the `Bloc` a bit problematic. As in the above example, we would have a different `Bloc` handler, called
+`onScrollUpdate`, imagine we have the same code body, i.e. invoking the `ScrollUpdateUseCase` on each call, and thus
+emitting a new `state` 1-to-1 accordingly.
 
-[top :arrow_heading_up:](#project_name)
+Our `BlocBuilder` from before would trigger way too often and cause unnecessary behavior. Of course `Bloc`s are just `Stream`s
+when being consumed, so we could for example use a simple `debounce` here, but again this is not very ideal.
 
-----------
+A `debounce` causes a redraw delay, and we only really need it to happen whenever the scroll position updates, _not_ when the `User` was updated.
 
-## Visuals :heart_eyes_cat:
+To accommodate, it would be nice to consume the `ScrollUpdateUseCase` in a different way, i.e. we apply back pressure on its input and we
+are only really interested in its _latest_ value.
 
-Curious how it will be looking? :smirk:
+To then consume this particular `UseCase` in a better way, we simply need to add the following to the above `Bloc`:
 
- |                          |                          |
- | ------------------------ | ------------------------ |
- | case description #1      | case description #2      |
- | <img width="280" src="../main/visuals/coding.gif"> | <img width="280" src="../main/visuals/building.gif"> |
- |                          |                          |
- | case description #3      | case description #4      |
- | <img width="280" src="../main/visuals/tea.gif"> | <img width="280" src="../main/visuals/cosmos.gif"> |
+```dart
+class UserBloc extends Cubit<UserState> with UseCaseBlocHelper
+```
 
-[top :arrow_heading_up:](#project_name)
+This _helper_ exposes new methods, which allow us to consume the `UseCase` in a way that only the _latest_ value will be added to the `state`:
 
-----------
-
-
-
-## Attributes :gear:
-
-| attribute name   | Datatype		| Default Value | Description                                  |
-| ---------------- | -------------- | ------------- | -------------------------------------------- |
-| `child`          | `Widget`   	| `required`    | The widget below this widget in the tree.    |
-| `isEnabled`      | `bool`   	 	| `true`    	| Responsible for showing component as enabled.|
-| `key` 		   | `Key`          | `null`        | Controls how one widget replaces another widget in the tree. |
-
-[top :arrow_heading_up:](#project_name)
-
-----------
-
-
-
-## Troubleshooting :thinking:
-
-Describe here well known problems and how they can be solved.
-
-[top :arrow_heading_up:](#project_name)
-
-----------
-
-
-
-## Contributing :construction_worker_woman:
-
-We're more than happy to accept pull requests :muscle:
-
- - check our [contributing](../main/.github/contributing.md) page
- - found a bug or have a question? Please [create an issue](https://github.com/xaynetwork/flutter-open-source-repo-template/issues/new/choose).
-
-
-
-[top :arrow_heading_up:](#project_name)
-
-----------
-
-
-
-## License :scroll:
-**project_name** is licensed under `Apache 2`. View [license](../main/LICENSE).
-
-[top :arrow_heading_up:](#project_name)
-
-----------
-
-
+```dart
+void onScrollUpdate(int position) {
+  // specify that we only care for the latest value
+  emitWithLatest(
+    using: _scrollUpdateUseCase,
+    runWith: position,
+    then: (int it, state) => state.copyWith(
+      position: it,
+    ),
+  );
+}
+```
