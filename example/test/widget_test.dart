@@ -1,5 +1,5 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:xayn_architecture_example/app/managers/screen_cubit.dart';
+import 'package:xayn_architecture_example/app/managers/news_feed_manager.dart';
 import 'package:xayn_architecture_example/data/repositories/data_user_repository.mocks.dart';
 import 'package:xayn_architecture_example/domain/entities/user.dart';
 import 'package:xayn_architecture_example/domain/states/screen_state.dart';
@@ -35,18 +35,20 @@ void main() {
 
       return Future.value(user);
     });
+
+    userUpdateUseCase;
   });
 
   group('Back Pressure tests: ', () {
     blocTest(
       'Can update Scroll Position: ',
       wait: kScrollUpdateUseCaseDebounceTime * 3,
-      build: () => ScreenCubit(
+      build: () => NewsFeedManager(
         discoveryResultsUseCase,
         resultCombinerUseCase,
         scrollUpdateUseCase,
       ),
-      act: (ScreenCubit bloc) => List.generate(1000, bloc.onScrollUpdate),
+      act: (NewsFeedManager bloc) => List.generate(1000, bloc.onScrollUpdate),
       expect: () => [
         ScreenState.empty().copyWith(position: 999),
       ],

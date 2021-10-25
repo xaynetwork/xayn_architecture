@@ -7,7 +7,7 @@
 import 'package:get_it/get_it.dart' as _i1;
 import 'package:injectable/injectable.dart' as _i2;
 
-import 'app/managers/screen_cubit.dart' as _i12;
+import 'app/managers/news_feed_manager.dart' as _i12;
 import 'data/repositories/data_user_repository.dart' as _i10;
 import 'domain/entities/user.dart' as _i9;
 import 'domain/repositories/user_repository.dart' as _i8;
@@ -34,7 +34,7 @@ _i1.GetIt $initGetIt(_i1.GetIt get,
       () => _i10.DataUserRepository());
   gh.factory<_i11.UserUpdateUseCase>(() =>
       _i11.UserUpdateUseCase(get<_i8.UserRepository<String, _i9.User>>()));
-  gh.factory<_i12.ScreenCubit>(() => _i12.ScreenCubit(
+  gh.factory<_i12.NewsFeedManager>(() => _i12.NewsFeedManager(
       get<_i4.DiscoveryResultsUseCase>(),
       get<_i5.ResultCombinerUseCase>(),
       get<_i6.ScrollUpdateUseCase>()));

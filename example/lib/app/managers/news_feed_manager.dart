@@ -10,8 +10,9 @@ import 'package:xayn_architecture_example/domain/use_cases/result_combiner_use_c
 import 'package:xayn_architecture_example/domain/use_cases/scroll_update_use_case.dart';
 
 @injectable
-class ScreenCubit extends HydratedCubit<ScreenState> with UseCaseBlocHelper {
-  ScreenCubit(
+class NewsFeedManager extends HydratedCubit<ScreenState>
+    with UseCaseBlocHelper {
+  NewsFeedManager(
     this._discoveryResultsUseCase,
     this._resultCombinerUseCase,
     this._scrollUpdateUseCase,
@@ -29,6 +30,15 @@ class ScreenCubit extends HydratedCubit<ScreenState> with UseCaseBlocHelper {
     // open a socket connection to the discovery api.
     // request 3 Results on init, then keep the connection open to
     // receive updates.
+    //
+    // discoveryResultsUseCase will simply emit a new List<Result> every time,
+    // we need to add the incoming ones, but also keep a total of 5 Results always,
+    // so if we receive too few Results, then we keep old ones.
+    //
+    // in this example, the use case always emits a List of 3,
+    // we then use pairwise to compare the old list vs the new one,
+    // and finally pass them both to resultCombinerUseCase which will then
+    // guarantee a final List of 5 Results for the state update.
     consume(_discoveryResultsUseCase, initialData: 3)
         .transform(
           (out) => out
@@ -37,6 +47,9 @@ class ScreenCubit extends HydratedCubit<ScreenState> with UseCaseBlocHelper {
                 eventName: 'requested more results',
                 timeStamp: DateTime.now(),
               ))
+              // in the beginning, there was nothing...
+              // we actually need to add this, because pairwise waits until it sees 2 events
+              .startWith(const [])
               // buffer previous and new results, see [Rx.pairwise](https://rxmarbles.com/#pairwise)
               .pairwise()
               // combine previous and new results into a new List

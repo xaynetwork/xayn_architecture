@@ -11,8 +11,8 @@ class DiscoveryResultsUseCase extends UseCase<int, List<Result>> {
 
   @override
   Stream<List<Result>> transaction(int param) async* {
-    yield* _discoveryApi.results;
-
     _discoveryApi.requestNextResults(param);
+
+    yield* _discoveryApi.results;
   }
 }

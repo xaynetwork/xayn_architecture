@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:xayn_architecture_example/app/managers/screen_cubit.dart';
+import 'package:xayn_architecture_example/app/managers/news_feed_manager.dart';
 import 'package:xayn_architecture_example/app/widgets/storage_ready.dart';
 import 'package:xayn_architecture_example/dependency_config.dart';
 import 'package:xayn_architecture_example/domain/entities/result.dart';
@@ -17,7 +17,7 @@ class NewsFeed extends StatefulWidget {
 
 class _NewsFeedState extends State<NewsFeed> {
   late final DiscoveryApi discoveryApi;
-  late final ScreenCubit screenCubit;
+  late final NewsFeedManager newsFeedManager;
   late final ScrollController scrollController;
 
   @override
@@ -26,7 +26,7 @@ class _NewsFeedState extends State<NewsFeed> {
     discoveryApi = di.get();
 
     scrollController.addListener(() {
-      screenCubit.onScrollUpdate(scrollController.offset.round());
+      newsFeedManager.onScrollUpdate(scrollController.offset.round());
 
       if (scrollController.position.atEdge && scrollController.offset != .0) {
         discoveryApi.onQuery(const DiscoveryQueryEvent(query: 'test'));
@@ -39,13 +39,13 @@ class _NewsFeedState extends State<NewsFeed> {
   @override
   Widget build(BuildContext context) {
     return StorageReady(
-        onReady: () => screenCubit = di.get(), builder: _buildFeed);
+        onReady: () => newsFeedManager = di.get(), builder: _buildFeed);
   }
 
   Widget _buildFeed(BuildContext context) {
-    return BlocBuilder<ScreenCubit, ScreenState>(
+    return BlocBuilder<NewsFeedManager, ScreenState>(
         buildWhen: (a, b) => a.results != b.results,
-        bloc: screenCubit,
+        bloc: newsFeedManager,
         builder: (context, state) {
           final results = state.results;
 

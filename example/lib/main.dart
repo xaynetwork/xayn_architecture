@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:xayn_architecture_example/app/managers/screen_cubit.dart';
 import 'package:xayn_architecture_example/app/widgets/news_feed.dart';
 import 'package:xayn_architecture_example/dependency_config.dart';
 
@@ -39,8 +38,6 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  ScreenCubit? screenCubit;
-
   @override
   void initState() {
     WidgetsFlutterBinding.ensureInitialized();

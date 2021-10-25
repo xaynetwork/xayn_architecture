@@ -4,8 +4,7 @@ import 'package:xayn_architecture_example/domain/entities/result.dart';
 
 @singleton
 class DiscoveryApi {
-  final PublishSubject<List<Result>> _onResults =
-      PublishSubject<List<Result>>();
+  final Subject<List<Result>> _onResults = BehaviorSubject<List<Result>>();
   static int _globalCount = 0;
 
   Stream<List<Result>> get results => _onResults;
