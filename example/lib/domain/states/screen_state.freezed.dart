@@ -21,8 +21,10 @@ ScreenState _$ScreenStateFromJson(Map<String, dynamic> json) {
 class _$ScreenStateTearOff {
   const _$ScreenStateTearOff();
 
-  _ScreenState call({User? user, int? position, bool? hasError}) {
+  _ScreenState call(
+      {List<Result>? results, User? user, int? position, bool? hasError}) {
     return _ScreenState(
+      results: results,
       user: user,
       position: position,
       hasError: hasError,
@@ -39,6 +41,7 @@ const $ScreenState = _$ScreenStateTearOff();
 
 /// @nodoc
 mixin _$ScreenState {
+  List<Result>? get results => throw _privateConstructorUsedError;
   User? get user => throw _privateConstructorUsedError;
   int? get position => throw _privateConstructorUsedError;
   bool? get hasError => throw _privateConstructorUsedError;
@@ -54,7 +57,7 @@ abstract class $ScreenStateCopyWith<$Res> {
   factory $ScreenStateCopyWith(
           ScreenState value, $Res Function(ScreenState) then) =
       _$ScreenStateCopyWithImpl<$Res>;
-  $Res call({User? user, int? position, bool? hasError});
+  $Res call({List<Result>? results, User? user, int? position, bool? hasError});
 
   $UserCopyWith<$Res>? get user;
 }
@@ -69,11 +72,16 @@ class _$ScreenStateCopyWithImpl<$Res> implements $ScreenStateCopyWith<$Res> {
 
   @override
   $Res call({
+    Object? results = freezed,
     Object? user = freezed,
     Object? position = freezed,
     Object? hasError = freezed,
   }) {
     return _then(_value.copyWith(
+      results: results == freezed
+          ? _value.results
+          : results // ignore: cast_nullable_to_non_nullable
+              as List<Result>?,
       user: user == freezed
           ? _value.user
           : user // ignore: cast_nullable_to_non_nullable
@@ -108,7 +116,7 @@ abstract class _$ScreenStateCopyWith<$Res>
           _ScreenState value, $Res Function(_ScreenState) then) =
       __$ScreenStateCopyWithImpl<$Res>;
   @override
-  $Res call({User? user, int? position, bool? hasError});
+  $Res call({List<Result>? results, User? user, int? position, bool? hasError});
 
   @override
   $UserCopyWith<$Res>? get user;
@@ -126,11 +134,16 @@ class __$ScreenStateCopyWithImpl<$Res> extends _$ScreenStateCopyWithImpl<$Res>
 
   @override
   $Res call({
+    Object? results = freezed,
     Object? user = freezed,
     Object? position = freezed,
     Object? hasError = freezed,
   }) {
     return _then(_ScreenState(
+      results: results == freezed
+          ? _value.results
+          : results // ignore: cast_nullable_to_non_nullable
+              as List<Result>?,
       user: user == freezed
           ? _value.user
           : user // ignore: cast_nullable_to_non_nullable
@@ -150,11 +163,14 @@ class __$ScreenStateCopyWithImpl<$Res> extends _$ScreenStateCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$_ScreenState extends _ScreenState with DiagnosticableTreeMixin {
-  const _$_ScreenState({this.user, this.position, this.hasError}) : super._();
+  const _$_ScreenState({this.results, this.user, this.position, this.hasError})
+      : super._();
 
   factory _$_ScreenState.fromJson(Map<String, dynamic> json) =>
       _$$_ScreenStateFromJson(json);
 
+  @override
+  final List<Result>? results;
   @override
   final User? user;
   @override
@@ -164,7 +180,7 @@ class _$_ScreenState extends _ScreenState with DiagnosticableTreeMixin {
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'ScreenState(user: $user, position: $position, hasError: $hasError)';
+    return 'ScreenState(results: $results, user: $user, position: $position, hasError: $hasError)';
   }
 
   @override
@@ -172,6 +188,7 @@ class _$_ScreenState extends _ScreenState with DiagnosticableTreeMixin {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty('type', 'ScreenState'))
+      ..add(DiagnosticsProperty('results', results))
       ..add(DiagnosticsProperty('user', user))
       ..add(DiagnosticsProperty('position', position))
       ..add(DiagnosticsProperty('hasError', hasError));
@@ -182,6 +199,7 @@ class _$_ScreenState extends _ScreenState with DiagnosticableTreeMixin {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _ScreenState &&
+            const DeepCollectionEquality().equals(other.results, results) &&
             (identical(other.user, user) || other.user == user) &&
             (identical(other.position, position) ||
                 other.position == position) &&
@@ -190,7 +208,8 @@ class _$_ScreenState extends _ScreenState with DiagnosticableTreeMixin {
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, user, position, hasError);
+  int get hashCode => Object.hash(runtimeType,
+      const DeepCollectionEquality().hash(results), user, position, hasError);
 
   @JsonKey(ignore: true)
   @override
@@ -204,13 +223,18 @@ class _$_ScreenState extends _ScreenState with DiagnosticableTreeMixin {
 }
 
 abstract class _ScreenState extends ScreenState {
-  const factory _ScreenState({User? user, int? position, bool? hasError}) =
-      _$_ScreenState;
+  const factory _ScreenState(
+      {List<Result>? results,
+      User? user,
+      int? position,
+      bool? hasError}) = _$_ScreenState;
   const _ScreenState._() : super._();
 
   factory _ScreenState.fromJson(Map<String, dynamic> json) =
       _$_ScreenState.fromJson;
 
+  @override
+  List<Result>? get results;
   @override
   User? get user;
   @override
