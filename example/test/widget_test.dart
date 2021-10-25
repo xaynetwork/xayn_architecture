@@ -40,7 +40,8 @@ void main() {
         age: 40,
       )),
       expect: () => [
-        ScreenState.empty().copyWith(user: const User('abc', 'John Doe', age: 40)),
+        ScreenState.empty()
+            .copyWith(user: const User('abc', 'John Doe', age: 40)),
       ],
     );
 
