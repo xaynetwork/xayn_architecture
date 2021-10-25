@@ -53,6 +53,14 @@ class _NewsFeedState extends State<NewsFeed> {
             return Container();
           }
 
+          if (scrollController.hasClients) {
+            final offset = scrollController.offset - 640;
+
+            if (offset > .0) {
+              scrollController.jumpTo(offset);
+            }
+          }
+
           return ListView.builder(
             controller: scrollController,
             itemBuilder: _buildResultCard(results),
@@ -67,8 +75,13 @@ class _NewsFeedState extends State<NewsFeed> {
 
         return Container(
           height: 320,
-          color: Colors.red,
-          child: Text(result.description),
+          padding: const EdgeInsets.all(32.0),
+          margin: const EdgeInsets.all(32.0),
+          color: Colors.black,
+          child: Text(
+            '${result.description}\n${result.uri}',
+            style: const TextStyle(color: Colors.white),
+          ),
         );
       };
 }

@@ -1,18 +1,19 @@
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:injectable/injectable.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:xayn_architecture/xayn_architecture.dart';
 import 'package:xayn_architecture_example/domain/entities/user.dart';
 import 'package:xayn_architecture_example/domain/states/screen_state.dart';
 import 'package:xayn_architecture_example/domain/use_cases/countly_record_use_case.dart';
 import 'package:xayn_architecture_example/domain/use_cases/dicovery_results_use_case.dart';
+import 'package:xayn_architecture_example/domain/use_cases/result_combiner_use_case.dart';
 import 'package:xayn_architecture_example/domain/use_cases/scroll_update_use_case.dart';
-import 'package:xayn_architecture_example/domain/use_cases/user_update_use_case.dart';
 
 @injectable
 class ScreenCubit extends HydratedCubit<ScreenState> with UseCaseBlocHelper {
   ScreenCubit(
     this._discoveryResultsUseCase,
-    this._userUpdateUseCase,
+    this._resultCombinerUseCase,
     this._scrollUpdateUseCase,
   ) : super(ScreenState.empty());
 
@@ -20,7 +21,7 @@ class ScreenCubit extends HydratedCubit<ScreenState> with UseCaseBlocHelper {
   late final OnHandler<int> _onScrollUpdate;
 
   final DiscoveryResultsUseCase _discoveryResultsUseCase;
-  final UserUpdateUseCase _userUpdateUseCase;
+  final ResultCombinerUseCase _resultCombinerUseCase;
   final ScrollUpdateUseCase _scrollUpdateUseCase;
 
   @override
@@ -30,31 +31,32 @@ class ScreenCubit extends HydratedCubit<ScreenState> with UseCaseBlocHelper {
     // receive updates.
     consume(_discoveryResultsUseCase, initialData: 3)
         .transform(
-          (out) => out.countlyRecord(CountlyRecordMetadata(
-            eventName: 'requested more results',
-            timeStamp: DateTime.now(),
-          )),
+          (out) => out
+              // notify Countly that a new request was made
+              .countlyRecord(CountlyRecordMetadata(
+                eventName: 'requested more results',
+                timeStamp: DateTime.now(),
+              ))
+              // buffer previous and new results, see [Rx.pairwise](https://rxmarbles.com/#pairwise)
+              .pairwise()
+              // combine previous and new results into a new List
+              .followedBy(_resultCombinerUseCase),
         )
         .fold(
           onSuccess: (it, state) => state.copyWith(
-            results: [...state.results ?? const [], ...it],
+            results: it,
             hasError: false,
           ),
           onFailure: (e, s, state) => ScreenState.error(),
         );
 
-    // todo: remove User, old example
-    _onUserUpdate = pipe(_userUpdateUseCase).fold(
-      onSuccess: (it, state) => state.copyWith(
-        user: it,
-        hasError: false,
-      ),
-      onFailure: (e, s, state) => ScreenState.error(),
-    );
-
+    // trigger each time the use scrolls.
+    // scroll events are debounced on the input side, see [ScrollUpdateUseCase.transform]
     _onScrollUpdate = pipe(_scrollUpdateUseCase)
         .transform(
-          (out) => out.countlyRecord(CountlyRecordMetadata(
+          (out) => out
+              // notify Countly that the user scrolled
+              .countlyRecord(CountlyRecordMetadata(
             eventName: 'scroll update',
             timeStamp: DateTime.now(),
           )),

@@ -4,6 +4,7 @@ import 'package:xayn_architecture_example/data/repositories/data_user_repository
 import 'package:xayn_architecture_example/domain/entities/user.dart';
 import 'package:xayn_architecture_example/domain/states/screen_state.dart';
 import 'package:xayn_architecture_example/domain/use_cases/dicovery_results_use_case.dart';
+import 'package:xayn_architecture_example/domain/use_cases/result_combiner_use_case.dart';
 import 'package:xayn_architecture_example/domain/use_cases/scroll_update_use_case.dart';
 import 'package:xayn_architecture_example/domain/use_cases/user_update_use_case.dart';
 import 'package:flutter/cupertino.dart';
@@ -16,6 +17,7 @@ void main() {
   late UserUpdateUseCase userUpdateUseCase;
   late ScrollUpdateUseCase scrollUpdateUseCase;
   late DiscoveryResultsUseCase discoveryResultsUseCase;
+  late ResultCombinerUseCase resultCombinerUseCase;
 
   setUp(() async {
     WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +28,7 @@ void main() {
     userUpdateUseCase = UserUpdateUseCase(userRepository);
     scrollUpdateUseCase = ScrollUpdateUseCase();
     discoveryResultsUseCase = DiscoveryResultsUseCase(DiscoveryApi());
+    resultCombinerUseCase = ResultCombinerUseCase();
 
     when(userRepository.update(any, any)).thenAnswer((invocation) {
       final user = invocation.positionalArguments.last as User;
@@ -36,29 +39,11 @@ void main() {
 
   group('Back Pressure tests: ', () {
     blocTest(
-      'Can update User: ',
-      build: () => ScreenCubit(
-        discoveryResultsUseCase,
-        userUpdateUseCase,
-        scrollUpdateUseCase,
-      ),
-      act: (ScreenCubit bloc) => bloc.onUserUpdate(const User(
-        'abc',
-        'John Doe',
-        age: 40,
-      )),
-      expect: () => [
-        ScreenState.empty()
-            .copyWith(user: const User('abc', 'John Doe', age: 40)),
-      ],
-    );
-
-    blocTest(
       'Can update Scroll Position: ',
       wait: kScrollUpdateUseCaseDebounceTime * 3,
       build: () => ScreenCubit(
         discoveryResultsUseCase,
-        userUpdateUseCase,
+        resultCombinerUseCase,
         scrollUpdateUseCase,
       ),
       act: (ScreenCubit bloc) => List.generate(1000, bloc.onScrollUpdate),
