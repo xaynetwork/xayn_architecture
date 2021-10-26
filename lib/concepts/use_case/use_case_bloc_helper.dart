@@ -89,7 +89,7 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
       () => state,
       (State? nextState) {
         if (nextState != null) {
-          emit(state);
+          emit(nextState);
         }
       },
       _subscriptions,
@@ -110,7 +110,7 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
         () => state,
         (State? nextState) {
           if (nextState != null) {
-            emit(state);
+            emit(nextState);
           }
         },
         _subscriptions,

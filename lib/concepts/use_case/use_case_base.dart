@@ -109,5 +109,5 @@ class UseCaseException {
 extension UseCaseExtension<In> on Stream<In> {
   Stream<Out> followedBy<Out>(UseCase<In, Out> useCase) => useCase
       .transform(this)
-      .transform(UseCaseStreamTransformer(useCase.transaction));
+      .transform(UseCaseStreamTransformer<In, Out>(useCase.transaction));
 }

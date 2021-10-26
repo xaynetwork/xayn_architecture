@@ -7,7 +7,7 @@ typedef UseCaseResultErrorHandler<State> = State? Function(
     Object error, StackTrace stackTrace, State state);
 typedef _OnState<State> = void Function(State?);
 typedef _StateBuilder<State> = State Function();
-typedef _Guard<State> = bool Function(State currentState, State nextState);
+typedef Guard<State> = bool Function(State currentState, State nextState);
 
 /// An interface which exposes methods to start consuming values from a `useCase`
 /// which is being consumed as a `Stream`.
@@ -27,7 +27,7 @@ abstract class UseCaseResolver<In, Out, State> {
   UseCaseSubscription fold({
     required UseCaseResultToStateHandler<State, Out> onSuccess,
     required UseCaseResultErrorHandler<State> onFailure,
-    _Guard<State>? guard,
+    Guard<State>? guard,
   });
 
   UseCaseResolver<In, OutNext, State> transform<OutNext>(
@@ -61,7 +61,7 @@ class _Resolver<In, Out, State> implements UseCaseResolver<In, Out, State> {
   UseCaseSubscription fold({
     required UseCaseResultToStateHandler<State, Out> onSuccess,
     required UseCaseResultErrorHandler<State> onFailure,
-    _Guard<State>? guard,
+    Guard<State>? guard,
   }) {
     final subscription = _stream
         .map((it) => onSuccess(it, _stateBuilder()))
@@ -111,7 +111,7 @@ class _SinkResolver<In, Out, State> extends _Resolver<In, Out, State>
   UseCaseSubject<In> fold({
     required UseCaseResultToStateHandler<State, Out> onSuccess,
     required UseCaseResultErrorHandler<State> onFailure,
-    _Guard<State>? guard,
+    Guard<State>? guard,
   }) {
     final subscription = _stream
         .map((it) => onSuccess(it, _stateBuilder()))

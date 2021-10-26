@@ -1,5 +1,12 @@
 import 'package:xayn_architecture/concepts/use_case.dart';
 
+class IntToDoubleUseCase extends UseCase<int, double> {
+  @override
+  Stream<double> transaction(int param) async* {
+    yield param.toDouble();
+  }
+}
+
 class IntToStringUseCase extends UseCase<int, String> {
   @override
   Stream<String> transaction(int param) async* {

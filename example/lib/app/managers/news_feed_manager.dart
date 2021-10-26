@@ -46,10 +46,10 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
         .transform(
           (out) => out
               // notify Countly that a new request was made
-              .countlyRecord(CountlyRecordMetadata(
+              .followedBy(CountlyRecordUseCase(CountlyRecordMetadata(
                 eventName: 'requested more results',
                 timeStamp: DateTime.now(),
-              ))
+              )))
               // in the beginning, there was nothing...
               // we actually need to add this, because pairwise waits until it sees 2 events
               .startWith(const [])
