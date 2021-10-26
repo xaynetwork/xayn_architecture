@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:xayn_architecture_example/app/managers/news_feed_manager.dart';
 import 'package:xayn_architecture_example/app/widgets/storage_ready.dart';
 import 'package:xayn_architecture_example/dependency_config.dart';
@@ -39,7 +41,15 @@ class _NewsFeedState extends State<NewsFeed> {
   @override
   Widget build(BuildContext context) {
     return StorageReady(
-        onReady: () => newsFeedManager = di.get(), builder: _buildFeed);
+      buildDirectory: () => getTemporaryDirectory(),
+      onReady: (path) async {
+        HydratedBloc.storage =
+            await HydratedStorage.build(storageDirectory: path);
+
+        newsFeedManager = di.get();
+      },
+      builder: _buildFeed,
+    );
   }
 
   Widget _buildFeed(BuildContext context) {

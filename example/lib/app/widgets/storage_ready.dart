@@ -1,16 +1,19 @@
-import 'package:flutter/widgets.dart';
-import 'package:hydrated_bloc/hydrated_bloc.dart';
-import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
-typedef OnReady = void Function();
+import 'package:flutter/widgets.dart';
+
+typedef OnReady = Future<void> Function(Directory);
+typedef BuildDirectory = Future<Directory> Function();
 
 class StorageReady extends StatefulWidget {
   final WidgetBuilder builder;
   final OnReady? onReady;
+  final BuildDirectory buildDirectory;
 
   const StorageReady({
     Key? key,
     required this.builder,
+    required this.buildDirectory,
     this.onReady,
   }) : super(key: key);
 
@@ -30,21 +33,25 @@ class _StorageReadyState extends State<StorageReady> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<HydratedStorage>(
-        future: getTemporaryDirectory()
-            .then((path) => HydratedStorage.build(storageDirectory: path)),
+    onReady(Directory path) async {
+      if (_didCallOnReady) {
+        return path;
+      }
+
+      final handler = widget.onReady ?? (_) async {};
+
+      await handler(path);
+
+      _didCallOnReady = true;
+
+      return path;
+    }
+
+    return FutureBuilder<Directory>(
+        future: widget.buildDirectory().then(onReady),
         builder: (_, snapshot) {
-          if (!snapshot.hasData) {
+          if (!_didCallOnReady) {
             return Container();
-          }
-
-          final onReady = widget.onReady;
-
-          HydratedBloc.storage = snapshot.data!;
-
-          if (!_didCallOnReady && onReady != null) {
-            _didCallOnReady = true;
-            onReady();
           }
 
           return widget.builder(context);
