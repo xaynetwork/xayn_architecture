@@ -26,6 +26,17 @@ void main() {
               onFailure: (e, s, state) => -2.0,
             ),
         expect: () => const [.0]);
+
+    blocTest('emits after consuming initial event (transform): ',
+        build: () => TestCubit.consume(
+            initialState: '-1.0',
+            initialData: 0,
+            useCase: IntToDoubleUseCase(),
+            onSuccess: (String it, state) => it,
+            onFailure: (e, s, state) => '-2.0',
+            transformer: (Stream<double> out) =>
+                out.map((it) => it.toString())),
+        expect: () => const ['0.0']);
   });
 
   group('pipe: ', () {
@@ -56,6 +67,21 @@ void main() {
           cubit.onHandler(3);
         },
         expect: () => const [3.0]);
+
+    blocTest('emits after calling the handler (transform): ',
+        build: () => TestCubit<String, int, double, String>.pipe(
+            initialState: '-1.0',
+            useCase: IntToDoubleUseCase(),
+            onSuccess: (String it, state) => it,
+            onFailure: (e, s, state) => '-2.0',
+            transformer: (Stream<double> out) =>
+                out.map((it) => it.toString())),
+        act: (TestCubit<String, int, double, String> cubit) {
+          cubit.onHandler(1);
+          cubit.onHandler(2);
+          cubit.onHandler(3);
+        },
+        expect: () => const ['3.0']);
   });
 }
 
