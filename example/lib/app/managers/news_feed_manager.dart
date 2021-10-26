@@ -11,7 +11,7 @@ import 'package:xayn_architecture_example/domain/use_cases/scroll_update_use_cas
 
 @injectable
 class NewsFeedManager extends HydratedCubit<ScreenState>
-    with UseCaseBlocHelper {
+    with UseCaseBlocHelper<ScreenState> {
   NewsFeedManager(
     this._discoveryResultsUseCase,
     this._resultCombinerUseCase,
@@ -56,6 +56,7 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
               .followedBy(_resultCombinerUseCase),
         )
         .fold(
+          handleState: emit, // todo: example with actual state machinery
           onSuccess: (it, state) => state.copyWith(
             results: it,
             hasError: false,
@@ -75,6 +76,7 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
           )),
         )
         .fold(
+          handleState: emit,
           onSuccess: (it, state) => state.copyWith(
             position: it,
             hasError: false,

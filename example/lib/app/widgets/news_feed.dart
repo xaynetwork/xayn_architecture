@@ -41,7 +41,7 @@ class _NewsFeedState extends State<NewsFeed> {
   @override
   Widget build(BuildContext context) {
     return StorageReady(
-      buildDirectory: () => getTemporaryDirectory(),
+      buildDirectory: getTemporaryDirectory,
       onReady: (path) async {
         HydratedBloc.storage =
             await HydratedStorage.build(storageDirectory: path);
