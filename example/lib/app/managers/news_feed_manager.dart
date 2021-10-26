@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
@@ -44,7 +42,6 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
     consume(
       _discoveryResultsUseCase,
       initialData: 3,
-      identity: 'discoveryApi',
     )
         .transform(
           (out) => out
@@ -62,12 +59,15 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
               .followedBy(_resultCombinerUseCase),
         )
         .fold(
-          onSuccess: (it, state) => state.copyWith(
-            results: it,
-            hasError: false,
-          ),
-          onFailure: (e, s, state) => ScreenState.error(),
-        );
+            onSuccess: (it, state) => state.copyWith(
+                  results: it,
+                  hasError: false,
+                ),
+            onFailure: (e, s, state) => ScreenState.error(),
+            guard: (currentState, nextState) {
+              // write guard rules here
+              return nextState.results?.isNotEmpty ?? false;
+            });
 
     // trigger each time the use scrolls.
     // scroll events are debounced on the input side, see [ScrollUpdateUseCase.transform]
@@ -87,14 +87,6 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
           ),
           onFailure: (e, s, state) => ScreenState.error(),
         );
-  }
-
-  @override
-  bool willEmit(
-      ScreenState currentState, ScreenState nextState, dynamic identity) {
-    log('will emit $identity');
-
-    return super.willEmit(currentState, nextState, identity);
   }
 
   /// Updates the [state] by passing a [User].

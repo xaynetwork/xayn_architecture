@@ -53,14 +53,6 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   /// ```
   void initHandlers() {}
 
-  bool willEmit(
-    State currentState,
-    State nextState,
-    dynamic identity,
-  ) {
-    return true;
-  }
-
   @override
   Future<void> close() {
     for (var it in _subscriptions) {
@@ -84,9 +76,9 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   ///
   /// When using [UseCaseSinkResolver.close], then be aware that any future
   /// incoming events will throw a [StateError] on that same `sink`.
-  _SinkResolver<In, Out, State> pipe<Identity, In, Out>(
-      UseCase<In, Out> useCase,
-      {Identity? identity}) {
+  _SinkResolver<In, Out, State> pipe<In, Out>(
+    UseCase<In, Out> useCase,
+  ) {
     final controller = StreamController<In>.broadcast();
     final stream = controller.stream.followedBy(useCase);
 
@@ -96,7 +88,7 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
       stream,
       () => state,
       (State? nextState) {
-        if (nextState != null && willEmit(state, nextState, identity)) {
+        if (nextState != null) {
           emit(state);
         }
       },
@@ -109,16 +101,15 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   /// The connection stays open, until `close` is called on the `Cubit`.
   ///
   /// Should you wish to prematurely close it, then use [UseCaseSubscription.cancel].
-  UseCaseResolver<In, Out, State> consume<Identity, In, Out>(
+  UseCaseResolver<In, Out, State> consume<In, Out>(
     UseCase<In, Out> useCase, {
     required In initialData,
-    Identity? identity,
   }) =>
       _Resolver(
         Stream.value(initialData).followedBy(useCase),
         () => state,
         (State? nextState) {
-          if (nextState != null && willEmit(state, nextState, identity)) {
+          if (nextState != null) {
             emit(state);
           }
         },

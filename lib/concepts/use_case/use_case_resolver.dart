@@ -7,6 +7,7 @@ typedef UseCaseResultErrorHandler<State> = State? Function(
     Object error, StackTrace stackTrace, State state);
 typedef _OnState<State> = void Function(State?);
 typedef _StateBuilder<State> = State Function();
+typedef _Guard<State> = bool Function(State currentState, State nextState);
 
 /// An interface which exposes methods to start consuming values from a `useCase`
 /// which is being consumed as a `Stream`.
@@ -18,10 +19,15 @@ typedef _StateBuilder<State> = State Function();
 ///
 /// [transform] is also the entry point for chaining multiple `useCase`s together
 /// using [UseCaseExtension.followedBy].
+///
+/// [guard] optionally allows for a `guard` handler, allowing you to compare
+/// the `current` state versus the `next` state.
+/// return `true` to allow emitting the `next` state, or false to discard it.
 abstract class UseCaseResolver<In, Out, State> {
   UseCaseSubscription fold({
     required UseCaseResultToStateHandler<State, Out> onSuccess,
     required UseCaseResultErrorHandler<State> onFailure,
+    _Guard<State>? guard,
   });
 
   UseCaseResolver<In, OutNext, State> transform<OutNext>(
@@ -55,10 +61,13 @@ class _Resolver<In, Out, State> implements UseCaseResolver<In, Out, State> {
   UseCaseSubscription fold({
     required UseCaseResultToStateHandler<State, Out> onSuccess,
     required UseCaseResultErrorHandler<State> onFailure,
+    _Guard<State>? guard,
   }) {
     final subscription = _stream
         .map((it) => onSuccess(it, _stateBuilder()))
         .onErrorReturnWith((e, s) => onFailure(e, s, _stateBuilder()))
+        .where((it) =>
+            it != null && guard != null ? guard(_stateBuilder(), it) : true)
         .listen(_onState);
 
     _subscriptions.add(subscription);
@@ -102,10 +111,13 @@ class _SinkResolver<In, Out, State> extends _Resolver<In, Out, State>
   UseCaseSubject<In> fold({
     required UseCaseResultToStateHandler<State, Out> onSuccess,
     required UseCaseResultErrorHandler<State> onFailure,
+    _Guard<State>? guard,
   }) {
     final subscription = _stream
         .map((it) => onSuccess(it, _stateBuilder()))
         .onErrorReturnWith((e, s) => onFailure(e, s, _stateBuilder()))
+        .where((it) =>
+            it != null && guard != null ? guard(_stateBuilder(), it) : true)
         .listen(_onState);
 
     _subscriptions.add(subscription);
