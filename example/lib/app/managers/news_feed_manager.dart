@@ -56,7 +56,6 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
               .followedBy(_resultCombinerUseCase),
         )
         .fold(
-          handleState: emit, // todo: example with actual state machinery
           onSuccess: (it, state) => state.copyWith(
             results: it,
             hasError: false,
@@ -76,7 +75,6 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
           )),
         )
         .fold(
-          handleState: emit,
           onSuccess: (it, state) => state.copyWith(
             position: it,
             hasError: false,

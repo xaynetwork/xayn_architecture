@@ -85,6 +85,7 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
     return _SinkResolver(
       stream,
       () => state,
+      emit,
       _subscriptions,
       controller.sink,
     );
@@ -101,6 +102,7 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
       _Resolver(
         Stream.value(initialData).followedBy(useCase),
         () => state,
+        emit,
         _subscriptions,
       );
 }

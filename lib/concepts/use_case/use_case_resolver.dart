@@ -5,8 +5,8 @@ typedef UseCaseResultToStateHandler<State, Out> = State Function(
     Out it, State state);
 typedef UseCaseResultErrorHandler<State> = State Function(
     Object error, StackTrace stackTrace, State state);
+typedef _OnState<State> = void Function(State);
 typedef _StateBuilder<State> = State Function();
-typedef StateMachineHandler<State> = void Function(State state);
 
 /// An interface which exposes methods to start consuming values from a `useCase`
 /// which is being consumed as a `Stream`.
@@ -20,7 +20,6 @@ typedef StateMachineHandler<State> = void Function(State state);
 /// using [UseCaseExtension.followedBy].
 abstract class UseCaseResolver<In, Out, State> {
   UseCaseSubscription fold({
-    required StateMachineHandler<State> handleState,
     required UseCaseResultToStateHandler<State, Out> onSuccess,
     required UseCaseResultErrorHandler<State> onFailure,
   });
@@ -42,24 +41,25 @@ abstract class UseCaseSinkResolver<In, Out, State>
 class _Resolver<In, Out, State> implements UseCaseResolver<In, Out, State> {
   final Stream<Out> _stream;
   final _StateBuilder<State> _stateBuilder;
+  final _OnState<State> _onState;
   final List<StreamSubscription<State>> _subscriptions;
 
   _Resolver(
     this._stream,
     this._stateBuilder,
+    this._onState,
     this._subscriptions,
   );
 
   @override
   UseCaseSubscription fold({
-    required StateMachineHandler<State> handleState,
     required UseCaseResultToStateHandler<State, Out> onSuccess,
     required UseCaseResultErrorHandler<State> onFailure,
   }) {
     final subscription = _stream
         .map((it) => onSuccess(it, _stateBuilder()))
         .onErrorReturnWith((e, s) => onFailure(e, s, _stateBuilder()))
-        .listen(handleState);
+        .listen(_onState);
 
     _subscriptions.add(subscription);
 
@@ -72,6 +72,7 @@ class _Resolver<In, Out, State> implements UseCaseResolver<In, Out, State> {
     return _Resolver<In, OutNext, State>(
       transform(_stream),
       _stateBuilder,
+      _onState,
       _subscriptions,
     );
   }
@@ -84,11 +85,13 @@ class _SinkResolver<In, Out, State> extends _Resolver<In, Out, State>
   _SinkResolver(
     Stream<Out> stream,
     _StateBuilder<State> stateBuilder,
+    _OnState<State> onState,
     List<StreamSubscription<State>> subscriptions,
     this._sink,
   ) : super(
           stream,
           stateBuilder,
+          onState,
           subscriptions,
         );
 
@@ -97,14 +100,13 @@ class _SinkResolver<In, Out, State> extends _Resolver<In, Out, State>
 
   @override
   UseCaseSubject<In> fold({
-    required StateMachineHandler<State> handleState,
     required UseCaseResultToStateHandler<State, Out> onSuccess,
     required UseCaseResultErrorHandler<State> onFailure,
   }) {
     final subscription = _stream
         .map((it) => onSuccess(it, _stateBuilder()))
         .onErrorReturnWith((e, s) => onFailure(e, s, _stateBuilder()))
-        .listen(handleState);
+        .listen(_onState);
 
     _subscriptions.add(subscription);
 
@@ -117,6 +119,7 @@ class _SinkResolver<In, Out, State> extends _Resolver<In, Out, State>
     return _SinkResolver<In, OutNext, State>(
       transform(_stream),
       _stateBuilder,
+      _onState,
       _subscriptions,
       _sink,
     );
