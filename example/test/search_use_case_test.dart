@@ -16,13 +16,12 @@ void main() {
         expect(
             searchUseCase('xayn'),
             completion(const [
-              UseCaseResult(data: SearchResult(progress: .0)),
-              UseCaseResult(data: SearchResult(progress: 20.0)),
-              UseCaseResult(data: SearchResult(progress: 40.0)),
-              UseCaseResult(data: SearchResult(progress: 60.0)),
-              UseCaseResult(data: SearchResult(progress: 80.0)),
-              UseCaseResult(
-                  data: SearchResult(
+              UseCaseResult.success(SearchResult(progress: .0)),
+              UseCaseResult.success(SearchResult(progress: 20.0)),
+              UseCaseResult.success(SearchResult(progress: 40.0)),
+              UseCaseResult.success(SearchResult(progress: 60.0)),
+              UseCaseResult.success(SearchResult(progress: 80.0)),
+              UseCaseResult.success(SearchResult(
                 progress: 100.0,
                 json: {'result': 'yay!'},
               )),

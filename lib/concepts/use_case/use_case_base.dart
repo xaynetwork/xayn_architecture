@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:rxdart/transformers.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:xayn_architecture/concepts/use_case/use_case_sink.dart';
+import 'package:xayn_architecture/concepts/use_case/use_case_transformer.dart';
 
 /// {@template use_case}
 /// ```dart
@@ -32,10 +32,9 @@ abstract class UseCase<In, Out> {
   /// were emitted by the `useCase`.
   @nonVirtual
   Future<List<UseCaseResult<Out>>> call(In param) => transaction(param)
-      .map((result) => UseCaseResult(data: result))
-      .onErrorReturnWith((e, s) => UseCaseResult<Out>(
-          exception:
-              UseCaseException(error: e, stackTrace: StackTrace.current)))
+      .map((result) => UseCaseResult.success(result))
+      .onErrorReturnWith((e, s) => UseCaseResult<Out>.failure(
+          UseCaseException(error: e, stackTrace: StackTrace.current)))
       .toList();
 
   /// If you want to apply any transformations on incoming params in [transaction],
@@ -69,8 +68,13 @@ class UseCaseResult<Out> {
   /// returns true when the call threw an error.
   bool get hasError => exception != null;
 
-  const UseCaseResult({this.data, this.exception})
-      : assert(data != null || exception != null);
+  const UseCaseResult.success(this.data)
+      : exception = null,
+        assert(data != null);
+
+  const UseCaseResult.failure(this.exception)
+      : data = null,
+        assert(exception != null);
 }
 
 /// A wrapper for exceptions that may be thrown during the call phase of a [UseCase].

@@ -5,7 +5,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:rxdart/transformers.dart';
 import 'package:xayn_architecture/concepts/use_case.dart';
-import 'package:xayn_architecture/concepts/use_case/use_case_impl.dart';
+import 'package:xayn_architecture/concepts/use_case/use_case_base.dart';
 
 part 'use_case_resolver.dart';
 part 'use_case_subject.dart';
