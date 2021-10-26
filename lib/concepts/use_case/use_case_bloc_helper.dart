@@ -54,7 +54,10 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   void initHandlers() {}
 
   bool willEmit<Identity>(
-      State currentState, StateCandidate<Identity, State> candidate) {
+    State currentState,
+    State nextState,
+    Identity? identity,
+  ) {
     return true;
   }
 
@@ -92,9 +95,8 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
     return _SinkResolver(
       stream,
       () => state,
-      (State? state) {
-        if (state != null &&
-            willEmit(state, StateCandidate(state, identity: identity))) {
+      (State? nextState) {
+        if (nextState != null && willEmit(state, nextState, identity)) {
           emit(state);
         }
       },
@@ -115,9 +117,8 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
       _Resolver(
         Stream.value(initialData).followedBy(useCase),
         () => state,
-        (State? state) {
-          if (state != null &&
-              willEmit(state, StateCandidate<Identity, State>(state))) {
+        (State? nextState) {
+          if (nextState != null && willEmit(state, nextState, identity)) {
             emit(state);
           }
         },
