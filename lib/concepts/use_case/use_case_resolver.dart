@@ -18,14 +18,13 @@ typedef _StateBuilder<State> = State Function();
 ///
 /// [transform] is also the entry point for chaining multiple `useCase`s together
 /// using [UseCaseExtension.followedBy].
-abstract class UseCaseResolver<Identity, In, Out, State> {
+abstract class UseCaseResolver<In, Out, State> {
   UseCaseSubscription fold({
     required UseCaseResultToStateHandler<State, Out> onSuccess,
     required UseCaseResultErrorHandler<State> onFailure,
-    Identity? identity,
   });
 
-  UseCaseResolver<Identity, In, OutNext, State> transform<OutNext>(
+  UseCaseResolver<In, OutNext, State> transform<OutNext>(
       Transformer<Out, OutNext> transform);
 }
 
@@ -34,13 +33,12 @@ abstract class UseCaseResolver<Identity, In, Out, State> {
 ///
 /// [close] will `close` the `sink`, after which no more incoming events will
 /// be accepted, instead any additional events will trigger a [StateError].
-abstract class UseCaseSinkResolver<Identity, In, Out, State>
-    extends UseCaseResolver<Identity, In, Out, State> {
+abstract class UseCaseSinkResolver<In, Out, State>
+    extends UseCaseResolver<In, Out, State> {
   void close();
 }
 
-class _Resolver<Identity, In, Out, State>
-    implements UseCaseResolver<Identity, In, Out, State> {
+class _Resolver<In, Out, State> implements UseCaseResolver<In, Out, State> {
   final Stream<Out> _stream;
   final _StateBuilder<State> _stateBuilder;
   final _OnState<State?> _onState;
@@ -57,7 +55,6 @@ class _Resolver<Identity, In, Out, State>
   UseCaseSubscription fold({
     required UseCaseResultToStateHandler<State, Out> onSuccess,
     required UseCaseResultErrorHandler<State> onFailure,
-    Identity? identity,
   }) {
     final subscription = _stream
         .map((it) => onSuccess(it, _stateBuilder()))
@@ -70,9 +67,9 @@ class _Resolver<Identity, In, Out, State>
   }
 
   @override
-  UseCaseResolver<Identity, In, OutNext, State> transform<OutNext>(
+  UseCaseResolver<In, OutNext, State> transform<OutNext>(
       Transformer<Out, OutNext> transform) {
-    return _Resolver<Identity, In, OutNext, State>(
+    return _Resolver<In, OutNext, State>(
       transform(_stream),
       _stateBuilder,
       _onState,
@@ -81,9 +78,8 @@ class _Resolver<Identity, In, Out, State>
   }
 }
 
-class _SinkResolver<Identity, In, Out, State>
-    extends _Resolver<Identity, In, Out, State>
-    implements UseCaseSinkResolver<Identity, In, Out, State> {
+class _SinkResolver<In, Out, State> extends _Resolver<In, Out, State>
+    implements UseCaseSinkResolver<In, Out, State> {
   final Sink<In> _sink;
 
   _SinkResolver(
@@ -106,7 +102,6 @@ class _SinkResolver<Identity, In, Out, State>
   UseCaseSubject<In> fold({
     required UseCaseResultToStateHandler<State, Out> onSuccess,
     required UseCaseResultErrorHandler<State> onFailure,
-    Identity? identity,
   }) {
     final subscription = _stream
         .map((it) => onSuccess(it, _stateBuilder()))
@@ -119,9 +114,9 @@ class _SinkResolver<Identity, In, Out, State>
   }
 
   @override
-  _SinkResolver<Identity, In, OutNext, State> transform<OutNext>(
+  _SinkResolver<In, OutNext, State> transform<OutNext>(
       Transformer<Out, OutNext> transform) {
-    return _SinkResolver<Identity, In, OutNext, State>(
+    return _SinkResolver<In, OutNext, State>(
       transform(_stream),
       _stateBuilder,
       _onState,

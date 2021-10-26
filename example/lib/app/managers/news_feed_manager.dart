@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
@@ -39,7 +41,11 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
     // we then use pairwise to compare the old list vs the new one,
     // and finally pass them both to resultCombinerUseCase which will then
     // guarantee a final List of 5 Results for the state update.
-    consume(_discoveryResultsUseCase, initialData: 3)
+    consume(
+      _discoveryResultsUseCase,
+      initialData: 3,
+      identity: 'discoveryApi',
+    )
         .transform(
           (out) => out
               // notify Countly that a new request was made
@@ -56,7 +62,6 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
               .followedBy(_resultCombinerUseCase),
         )
         .fold(
-          identity: 'discoveryApi',
           onSuccess: (it, state) => state.copyWith(
             results: it,
             hasError: false,
@@ -82,6 +87,14 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
           ),
           onFailure: (e, s, state) => ScreenState.error(),
         );
+  }
+
+  @override
+  bool willEmit(
+      ScreenState currentState, ScreenState nextState, dynamic identity) {
+    log('will emit $identity');
+
+    return super.willEmit(currentState, nextState, identity);
   }
 
   /// Updates the [state] by passing a [User].
