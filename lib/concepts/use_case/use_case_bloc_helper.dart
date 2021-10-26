@@ -53,7 +53,8 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   /// ```
   void initHandlers() {}
 
-  bool willEmit<Identity>(StateCandidate<Identity, State> candidate) {
+  bool willEmit<Identity>(
+      State currentState, StateCandidate<Identity, State> candidate) {
     return true;
   }
 
@@ -93,7 +94,7 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
       () => state,
       (State? state) {
         if (state != null &&
-            willEmit(StateCandidate(state, identity: identity))) {
+            willEmit(state, StateCandidate(state, identity: identity))) {
           emit(state);
         }
       },
@@ -116,7 +117,7 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
         () => state,
         (State? state) {
           if (state != null &&
-              willEmit(StateCandidate<Identity, State>(state))) {
+              willEmit(state, StateCandidate<Identity, State>(state))) {
             emit(state);
           }
         },
