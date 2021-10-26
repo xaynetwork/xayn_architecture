@@ -18,7 +18,7 @@ abstract class UseCaseSubject<In> extends UseCaseSubscription {
 }
 
 class _Subscriber<State> implements UseCaseSubscription {
-  final StreamSubscription<State> _subscription;
+  final StreamSubscription<State?> _subscription;
 
   _Subscriber(this._subscription);
 
@@ -37,7 +37,7 @@ class _Emitter<In, State> extends _Subscriber<State>
     implements UseCaseSubject<In> {
   final Sink<In> _sink;
 
-  _Emitter(this._sink, StreamSubscription<State> subscription)
+  _Emitter(this._sink, StreamSubscription<State?> subscription)
       : super(subscription);
 
   @override

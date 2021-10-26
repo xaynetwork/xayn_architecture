@@ -56,6 +56,7 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
               .followedBy(_resultCombinerUseCase),
         )
         .fold(
+          identity: 'discoveryApi',
           onSuccess: (it, state) => state.copyWith(
             results: it,
             hasError: false,

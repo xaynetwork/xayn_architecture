@@ -17,8 +17,8 @@ typedef OnHandler<Next> = void Function(Next data);
 /// A mixin which exposes [UseCase] helper methods for binding changes to the [BlocBase.state]
 mixin UseCaseBlocHelper<State> on BlocBase<State> {
   final List<StreamController> _subjects = <StreamController>[];
-  final List<StreamSubscription<State>> _subscriptions =
-      <StreamSubscription<State>>[];
+  final List<StreamSubscription<State?>> _subscriptions =
+      <StreamSubscription<State?>>[];
   var _didInitHandlers = false;
 
   @override
@@ -53,6 +53,10 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   /// ```
   void initHandlers() {}
 
+  bool willEmit<Identity>(StateCandidate<Identity, State> candidate) {
+    return true;
+  }
+
   @override
   Future<void> close() {
     for (var it in _subscriptions) {
@@ -76,7 +80,9 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   ///
   /// When using [UseCaseSinkResolver.close], then be aware that any future
   /// incoming events will throw a [StateError] on that same `sink`.
-  _SinkResolver<In, Out, State> pipe<In, Out>(UseCase<In, Out> useCase) {
+  _SinkResolver<Identity, In, Out, State> pipe<Identity, In, Out>(
+      UseCase<In, Out> useCase,
+      {Identity? identity}) {
     final controller = StreamController<In>.broadcast();
     final stream = controller.stream.followedBy(useCase);
 
@@ -85,7 +91,12 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
     return _SinkResolver(
       stream,
       () => state,
-      emit,
+      (State? state) {
+        if (state != null &&
+            willEmit(StateCandidate(state, identity: identity))) {
+          emit(state);
+        }
+      },
       _subscriptions,
       controller.sink,
     );
@@ -95,14 +106,27 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   /// The connection stays open, until `close` is called on the `Cubit`.
   ///
   /// Should you wish to prematurely close it, then use [UseCaseSubscription.cancel].
-  UseCaseResolver<In, Out, State> consume<In, Out>(
+  UseCaseResolver<Identity, In, Out, State> consume<Identity, In, Out>(
     UseCase<In, Out> useCase, {
     required In initialData,
+    Identity? identity,
   }) =>
       _Resolver(
         Stream.value(initialData).followedBy(useCase),
         () => state,
-        emit,
+        (State? state) {
+          if (state != null &&
+              willEmit(StateCandidate<Identity, State>(state))) {
+            emit(state);
+          }
+        },
         _subscriptions,
       );
+}
+
+class StateCandidate<Identity, State> {
+  final Identity? identity;
+  final State state;
+
+  const StateCandidate(this.state, {this.identity});
 }
