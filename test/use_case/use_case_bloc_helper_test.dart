@@ -16,6 +16,16 @@ void main() {
               onFailure: (e, s, state) => -2.0,
             ),
         expect: () => const [.0]);
+
+    blocTest('emits after consuming initial event (generator): ',
+        build: () => TestCubit.consume(
+              initialState: -1.0,
+              initialData: 0,
+              useCase: IntToDoubleGeneratorUseCase(),
+              onSuccess: (double it, state) => it,
+              onFailure: (e, s, state) => -2.0,
+            ),
+        expect: () => const [.0]);
   });
 
   group('pipe: ', () {
@@ -23,6 +33,20 @@ void main() {
         build: () => TestCubit.pipe(
               initialState: -1.0,
               useCase: IntToDoubleUseCase(),
+              onSuccess: (double it, state) => it,
+              onFailure: (e, s, state) => -2.0,
+            ),
+        act: (TestCubit<double, int, double, double> cubit) {
+          cubit.onHandler(1);
+          cubit.onHandler(2);
+          cubit.onHandler(3);
+        },
+        expect: () => const [3.0]);
+
+    blocTest('emits after calling the handler (generator): ',
+        build: () => TestCubit.pipe(
+              initialState: -1.0,
+              useCase: IntToDoubleGeneratorUseCase(),
               onSuccess: (double it, state) => it,
               onFailure: (e, s, state) => -2.0,
             ),
