@@ -16,6 +16,10 @@
 *.iws
 .idea/
 
+# Env
+.env.debug
+.env.prod
+
 # Visual Studio Code related
 .classpath
 .project
