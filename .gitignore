@@ -17,7 +17,7 @@
 .idea/
 
 # Env
-/example/.env.debug
+/example/.env.dev
 /example/.env.prod
 
 # Visual Studio Code related
