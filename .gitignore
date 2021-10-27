@@ -17,8 +17,8 @@
 .idea/
 
 # Env
-.env.debug
-.env.prod
+/example/.env.debug
+/example/.env.prod
 
 # Visual Studio Code related
 .classpath
