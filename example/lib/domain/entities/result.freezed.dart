@@ -21,9 +21,10 @@ Result _$ResultFromJson(Map<String, dynamic> json) {
 class _$ResultTearOff {
   const _$ResultTearOff();
 
-  _Result call(Uri uri, String description) {
+  _Result call(Uri uri, Uri? imageUri, String description) {
     return _Result(
       uri,
+      imageUri,
       description,
     );
   }
@@ -39,6 +40,7 @@ const $Result = _$ResultTearOff();
 /// @nodoc
 mixin _$Result {
   Uri get uri => throw _privateConstructorUsedError;
+  Uri? get imageUri => throw _privateConstructorUsedError;
   String get description => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -50,7 +52,7 @@ mixin _$Result {
 abstract class $ResultCopyWith<$Res> {
   factory $ResultCopyWith(Result value, $Res Function(Result) then) =
       _$ResultCopyWithImpl<$Res>;
-  $Res call({Uri uri, String description});
+  $Res call({Uri uri, Uri? imageUri, String description});
 }
 
 /// @nodoc
@@ -64,6 +66,7 @@ class _$ResultCopyWithImpl<$Res> implements $ResultCopyWith<$Res> {
   @override
   $Res call({
     Object? uri = freezed,
+    Object? imageUri = freezed,
     Object? description = freezed,
   }) {
     return _then(_value.copyWith(
@@ -71,6 +74,10 @@ class _$ResultCopyWithImpl<$Res> implements $ResultCopyWith<$Res> {
           ? _value.uri
           : uri // ignore: cast_nullable_to_non_nullable
               as Uri,
+      imageUri: imageUri == freezed
+          ? _value.imageUri
+          : imageUri // ignore: cast_nullable_to_non_nullable
+              as Uri?,
       description: description == freezed
           ? _value.description
           : description // ignore: cast_nullable_to_non_nullable
@@ -84,7 +91,7 @@ abstract class _$ResultCopyWith<$Res> implements $ResultCopyWith<$Res> {
   factory _$ResultCopyWith(_Result value, $Res Function(_Result) then) =
       __$ResultCopyWithImpl<$Res>;
   @override
-  $Res call({Uri uri, String description});
+  $Res call({Uri uri, Uri? imageUri, String description});
 }
 
 /// @nodoc
@@ -99,6 +106,7 @@ class __$ResultCopyWithImpl<$Res> extends _$ResultCopyWithImpl<$Res>
   @override
   $Res call({
     Object? uri = freezed,
+    Object? imageUri = freezed,
     Object? description = freezed,
   }) {
     return _then(_Result(
@@ -106,6 +114,10 @@ class __$ResultCopyWithImpl<$Res> extends _$ResultCopyWithImpl<$Res>
           ? _value.uri
           : uri // ignore: cast_nullable_to_non_nullable
               as Uri,
+      imageUri == freezed
+          ? _value.imageUri
+          : imageUri // ignore: cast_nullable_to_non_nullable
+              as Uri?,
       description == freezed
           ? _value.description
           : description // ignore: cast_nullable_to_non_nullable
@@ -117,7 +129,7 @@ class __$ResultCopyWithImpl<$Res> extends _$ResultCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$_Result extends _Result {
-  const _$_Result(this.uri, this.description) : super._();
+  const _$_Result(this.uri, this.imageUri, this.description) : super._();
 
   factory _$_Result.fromJson(Map<String, dynamic> json) =>
       _$$_ResultFromJson(json);
@@ -125,11 +137,13 @@ class _$_Result extends _Result {
   @override
   final Uri uri;
   @override
+  final Uri? imageUri;
+  @override
   final String description;
 
   @override
   String toString() {
-    return 'Result(uri: $uri, description: $description)';
+    return 'Result(uri: $uri, imageUri: $imageUri, description: $description)';
   }
 
   @override
@@ -138,12 +152,14 @@ class _$_Result extends _Result {
         (other.runtimeType == runtimeType &&
             other is _Result &&
             (identical(other.uri, uri) || other.uri == uri) &&
+            (identical(other.imageUri, imageUri) ||
+                other.imageUri == imageUri) &&
             (identical(other.description, description) ||
                 other.description == description));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, uri, description);
+  int get hashCode => Object.hash(runtimeType, uri, imageUri, description);
 
   @JsonKey(ignore: true)
   @override
@@ -157,13 +173,15 @@ class _$_Result extends _Result {
 }
 
 abstract class _Result extends Result {
-  const factory _Result(Uri uri, String description) = _$_Result;
+  const factory _Result(Uri uri, Uri? imageUri, String description) = _$_Result;
   const _Result._() : super._();
 
   factory _Result.fromJson(Map<String, dynamic> json) = _$_Result.fromJson;
 
   @override
   Uri get uri;
+  @override
+  Uri? get imageUri;
   @override
   String get description;
   @override

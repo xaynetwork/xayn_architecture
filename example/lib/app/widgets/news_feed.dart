@@ -28,10 +28,8 @@ class _NewsFeedState extends State<NewsFeed> {
     discoveryApi = di.get();
 
     scrollController.addListener(() {
-      newsFeedManager.onScrollUpdate(scrollController.offset.round());
-
       if (scrollController.position.atEdge && scrollController.offset != .0) {
-        discoveryApi.onQuery(const DiscoveryQueryEvent(query: 'test'));
+        discoveryApi.handleQuery('');
       }
     });
 
@@ -63,14 +61,6 @@ class _NewsFeedState extends State<NewsFeed> {
             return Container();
           }
 
-          if (scrollController.hasClients) {
-            final offset = scrollController.offset - 640;
-
-            if (offset > .0) {
-              scrollController.jumpTo(offset);
-            }
-          }
-
           return ListView.builder(
             controller: scrollController,
             itemBuilder: _buildResultCard(results),
@@ -82,16 +72,39 @@ class _NewsFeedState extends State<NewsFeed> {
   Widget Function(BuildContext, int) _buildResultCard(List<Result> results) =>
       (BuildContext context, int index) {
         final result = results[index];
+        final imageUri = result.imageUri;
 
-        return Container(
-          height: 320,
-          padding: const EdgeInsets.all(32.0),
-          margin: const EdgeInsets.all(32.0),
-          color: Colors.black,
-          child: Text(
-            '${result.description}\n${result.uri}',
-            style: const TextStyle(color: Colors.white),
-          ),
+        return Stack(
+          children: [
+            if (imageUri != null) Image.network(result.imageUri.toString()),
+            Container(
+              color: const Color.fromARGB(128, 0, 0, 0),
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    result.uri.toString(),
+                    style: const TextStyle(
+                      color: Colors.lightBlue,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 16.0,
+                  ),
+                  Text(
+                    result.description,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ],
         );
       };
 }

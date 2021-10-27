@@ -5,9 +5,10 @@ import 'package:xayn_architecture/concepts/use_case.dart';
 
 import 'helpers/use_cases.dart';
 
+/// note that by default, use cases are consumed/piped in a switchMap fashion
 void main() {
   group('consume: ', () {
-    blocTest('emits after consuming initial event: ',
+    blocTest('standard throughput: ',
         build: () => TestCubit.consume(
               initialState: -1.0,
               initialData: 0,
@@ -17,7 +18,7 @@ void main() {
             ),
         expect: () => const [.0]);
 
-    blocTest('emits after consuming initial event (generator): ',
+    blocTest('standard throughput using inner async generator: ',
         build: () => TestCubit.consume(
               initialState: -1.0,
               initialData: 0,
@@ -27,7 +28,7 @@ void main() {
             ),
         expect: () => const [.0]);
 
-    blocTest('emits after consuming initial event (transform): ',
+    blocTest('transformed throughput: ',
         build: () => TestCubit.consume(
             initialState: '-1.0',
             initialData: 0,
@@ -37,10 +38,20 @@ void main() {
             transformer: (Stream<double> out) =>
                 out.map((it) => it.toString())),
         expect: () => const ['0.0']);
+
+    blocTest('guarded throughput: ',
+        build: () => TestCubit.consume(
+            initialState: -1.0,
+            initialData: 0,
+            useCase: IntToDoubleUseCase(),
+            onSuccess: (double it, state) => it,
+            onFailure: (e, s, state) => -2.0,
+            guard: (double oldState, double nextState) => nextState > .0),
+        expect: () => const []);
   });
 
   group('pipe: ', () {
-    blocTest('emits after calling the handler: ',
+    blocTest('standard throughput: ',
         build: () => TestCubit.pipe(
               initialState: -1.0,
               useCase: IntToDoubleUseCase(),
@@ -54,7 +65,7 @@ void main() {
         },
         expect: () => const [3.0]);
 
-    blocTest('emits after calling the handler (generator): ',
+    blocTest('standard throughput using inner async generator: ',
         build: () => TestCubit.pipe(
               initialState: -1.0,
               useCase: IntToDoubleGeneratorUseCase(),
@@ -68,7 +79,7 @@ void main() {
         },
         expect: () => const [3.0]);
 
-    blocTest('emits after calling the handler (transform): ',
+    blocTest('transformed throughput: ',
         build: () => TestCubit<String, int, double, String>.pipe(
             initialState: '-1.0',
             useCase: IntToDoubleUseCase(),
@@ -82,12 +93,26 @@ void main() {
           cubit.onHandler(3);
         },
         expect: () => const ['3.0']);
+
+    blocTest('guarded throughput: ',
+        build: () => TestCubit.pipe(
+            initialState: -1.0,
+            useCase: IntToDoubleUseCase(),
+            onSuccess: (double it, state) => it,
+            onFailure: (e, s, state) => -2.0,
+            guard: (double oldState, double nextState) => nextState > .0),
+        act: (TestCubit<double, int, double, double> cubit) {
+          cubit.onHandler(1);
+          cubit.onHandler(2);
+          cubit.onHandler(3);
+        },
+        expect: () => const [3.0]);
   });
 }
 
 class TestCubit<T, In, Out, OutNext> extends Cubit<T>
     with UseCaseBlocHelper<T> {
-  late final OnHandler<In> _handler;
+  late final Handler<In> _handler;
 
   TestCubit.consume({
     required T initialState,

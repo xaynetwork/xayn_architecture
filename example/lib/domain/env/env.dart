@@ -5,6 +5,6 @@ part 'env.g.dart';
 
 @Envify(path: kReleaseMode ? '.env.prod' : '.env.dev')
 abstract class Env {
-  static const String key = _Env.key;
-  static const String endPoint = _Env.endPoint;
+  static const String searchApiBaseUrl = _Env.searchApiBaseUrl;
+  static const String searchApiSecretKey = _Env.searchApiSecretKey;
 }

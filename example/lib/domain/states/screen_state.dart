@@ -19,6 +19,8 @@ class ScreenState with _$ScreenState {
 
   factory ScreenState.empty() => const _ScreenState(hasError: false);
 
+  factory ScreenState.loading() => const _ScreenState(hasError: false);
+
   factory ScreenState.error() => const _ScreenState(hasError: true);
 
   factory ScreenState.fromJson(Map<String, dynamic> json) =>

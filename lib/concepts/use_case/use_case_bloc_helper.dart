@@ -12,7 +12,7 @@ part 'use_case_subject.dart';
 
 /// A method signature, defines a Function with exactly one parameter.
 /// Used in or `cubit`s to define handlers that are exposed to widgets.
-typedef OnHandler<Next> = void Function(Next data);
+typedef Handler<Next> = void Function(Next data);
 
 /// A mixin which exposes [UseCase] helper methods for binding changes to the [BlocBase.state]
 mixin UseCaseBlocHelper<State> on BlocBase<State> {
@@ -33,7 +33,7 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   }
 
   /// [initHandlers] is called right after `BlocBase` is created,
-  /// override this handler to setup any [OnHandler] methods.
+  /// override this handler to setup any [Handler] methods.
   ///
   /// ```dart
   /// late final OnHandler<User> _onUserUpdate;

@@ -7,7 +7,7 @@ part 'result.g.dart';
 class Result with _$Result {
   const Result._();
 
-  const factory Result(Uri uri, String description) = _Result;
+  const factory Result(Uri uri, Uri? imageUri, String description) = _Result;
 
   factory Result.fromJson(Map<String, dynamic> json) => _$ResultFromJson(json);
 }
