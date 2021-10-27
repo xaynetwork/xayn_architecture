@@ -1,0 +1,43 @@
+name: xayn_architecture_example
+description: A simple project for Xayn architecture
+publish_to: 'none'
+version: 0.0.1
+
+environment:
+  sdk: ">=2.14.0 <3.0.0"
+  flutter: ">=2.5.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  xayn_architecture:
+    path: .././
+  envify: ^2.0.0
+  get_it: ^7.0.0
+  http: ^0.13.4
+  injectable: ^1.2.2
+  json_annotation: ^4.3.0
+  json_serializable: ^6.0.0
+  flutter_bloc: ^7.3.1
+  freezed_annotation: ^0.15.0
+  hydrated_bloc: ^7.1.0
+  logger: ^1.0.0
+  path_provider: ^2.0.5
+  provider: ^6.0.1
+  rxdart: ^0.27.2
+  uuid: ^3.0.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  bloc_test: ^8.3.0
+  build_runner: ^2.1.4
+  envify_generator: ^2.0.2
+  freezed: ^0.15.0+1
+  injectable_generator: ^1.5.2
+  mockito: ^5.0.16
+  lints: ^1.0.1
+  flutter_lints: ^1.0.4
+
+flutter:
+  uses-material-design: true
