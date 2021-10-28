@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hydrated_bloc/hydrated_bloc.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:xayn_architecture_example/app/managers/news_feed_manager.dart';
-import 'package:xayn_architecture_example/app/widgets/storage_ready.dart';
+import 'package:xayn_architecture_example/app/managers/storage_manager.dart';
 import 'package:xayn_architecture_example/dependency_config.dart';
 import 'package:xayn_architecture_example/domain/entities/document.dart';
 import 'package:xayn_architecture_example/domain/states/screen_state.dart';
@@ -19,12 +17,14 @@ class NewsFeed extends StatefulWidget {
 
 class _NewsFeedState extends State<NewsFeed> {
   late final DiscoveryApi discoveryApi;
-  late final NewsFeedManager newsFeedManager;
+  late final StorageManager storageManager;
   late final ScrollController scrollController;
+  NewsFeedManager? newsFeedManager;
 
   @override
   void initState() {
     scrollController = ScrollController();
+    storageManager = di.get();
     discoveryApi = di.get();
 
     scrollController.addListener(() {
@@ -38,15 +38,17 @@ class _NewsFeedState extends State<NewsFeed> {
 
   @override
   Widget build(BuildContext context) {
-    return StorageReady(
-      buildDirectory: getTemporaryDirectory,
-      onReady: (path) async {
-        HydratedBloc.storage =
-            await HydratedStorage.build(storageDirectory: path);
+    return BlocBuilder<StorageManager, StorageState>(
+      bloc: storageManager,
+      builder: (context, state) {
+        if (!state.isReady) {
+          return Container();
+        }
 
-        newsFeedManager = di.get();
+        newsFeedManager ??= di.get();
+
+        return _buildFeed(context);
       },
-      builder: _buildFeed,
     );
   }
 
