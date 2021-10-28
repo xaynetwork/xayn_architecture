@@ -59,7 +59,7 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
         .fold(
           onSuccess: (it) => it.isComplete
               ? _extractFakeKeywordAndEmit(it.results)
-              : const DiscoveryApiState(results: [], isComplete: false),
+              : const DiscoveryApiState.loading(),
           onFailure: HandleFailure(
               (e, s) => DiscoveryApiState.error(error: e, stackTrace: s),
               matchers: {
@@ -116,6 +116,8 @@ class DiscoveryApiState {
   final Object? error;
   final StackTrace? stackTrace;
 
+  bool get isLoading => !isComplete && results.isEmpty && error == null;
+
   const DiscoveryApiState({
     required this.results,
     required this.isComplete,
@@ -123,6 +125,12 @@ class DiscoveryApiState {
         stackTrace = null;
 
   const DiscoveryApiState.initial()
+      : results = const [],
+        isComplete = false,
+        error = null,
+        stackTrace = null;
+
+  const DiscoveryApiState.loading()
       : results = const [],
         isComplete = false,
         error = null,
