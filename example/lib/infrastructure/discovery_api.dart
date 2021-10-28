@@ -1,10 +1,11 @@
 import 'dart:math';
 
+import 'package:xayn_discovery_engine/discovery_engine.dart' as xayn;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:xayn_architecture/concepts/use_case.dart';
 import 'package:xayn_architecture/xayn_architecture.dart';
-import 'package:xayn_architecture_example/domain/entities/result.dart';
+import 'package:xayn_architecture_example/domain/entities/document.dart';
 import 'package:xayn_architecture_example/domain/use_cases/news_feed/bing_call_endpoint_use_case.dart';
 import 'package:xayn_architecture_example/domain/use_cases/news_feed/news_feed.dart';
 import 'package:xayn_architecture_example/domain/use_cases/logger_use_case.dart';
@@ -31,7 +32,8 @@ const List<String> randomKeywords = [
 
 @singleton
 class DiscoveryApi extends Cubit<DiscoveryApiState>
-    with UseCaseBlocHelper<DiscoveryApiState> {
+    with UseCaseBlocHelper<DiscoveryApiState>
+    implements xayn.DiscoveryEngine {
   final RequestBuilderUseCase _requestBuilderUseCase;
   final CallEndpointUseCase _callEndpointUseCase;
   final Random rnd = Random();
@@ -92,7 +94,7 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
     _handleQuery(nextFakeKeyword);
   }
 
-  DiscoveryApiState _extractFakeKeywordAndEmit(List<Result> nextResults) {
+  DiscoveryApiState _extractFakeKeywordAndEmit(List<Document> nextResults) {
     nextFakeKeyword = _fakeNextKeywork(nextResults);
 
     if (nextResults.isEmpty) {
@@ -103,13 +105,13 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
   }
 
   /// selects a random word from the combined set of [Result.description]s.
-  String _fakeNextKeywork(List<Result> nextResults) {
+  String _fakeNextKeywork(List<Document> nextResults) {
     if (nextResults.isEmpty) {
       return randomKeywords[rnd.nextInt(randomKeywords.length)];
     }
 
     final words = nextResults
-        .map((it) => it.description)
+        .map((it) => it.webResource.snippet)
         .join(' ')
         .split(RegExp(r'[\s]+'))
         .where((it) => it.length >= 5)
@@ -130,7 +132,7 @@ class DiscoveryApiEvent {
 }
 
 class DiscoveryApiState {
-  final List<Result> results;
+  final List<Document> results;
   final bool isComplete;
   final Object? error;
   final StackTrace? stackTrace;
@@ -139,7 +141,7 @@ class DiscoveryApiState {
 
   bool get hasError => error != null;
 
-  const DiscoveryApiState({
+  DiscoveryApiState({
     required this.results,
     required this.isComplete,
   })  : error = null,
@@ -157,9 +159,12 @@ class DiscoveryApiState {
         error = null,
         stackTrace = null;
 
-  const DiscoveryApiState.error({
+  DiscoveryApiState.error({
     required this.error,
     required this.stackTrace,
   })  : results = const [],
-        isComplete = false;
+        isComplete = false {
+    // ignore: avoid_print
+    print('e: $error, st: $stackTrace');
+  }
 }

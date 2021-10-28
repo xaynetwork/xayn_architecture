@@ -6,7 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:xayn_architecture_example/app/managers/news_feed_manager.dart';
 import 'package:xayn_architecture_example/app/widgets/storage_ready.dart';
 import 'package:xayn_architecture_example/dependency_config.dart';
-import 'package:xayn_architecture_example/domain/entities/result.dart';
+import 'package:xayn_architecture_example/domain/entities/document.dart';
 import 'package:xayn_architecture_example/domain/states/screen_state.dart';
 import 'package:xayn_architecture_example/infrastructure/discovery_api.dart';
 
@@ -52,7 +52,6 @@ class _NewsFeedState extends State<NewsFeed> {
 
   Widget _buildFeed(BuildContext context) {
     return BlocBuilder<NewsFeedManager, ScreenState>(
-        buildWhen: (a, b) => a.results != b.results,
         bloc: newsFeedManager,
         builder: (context, state) {
           final results = state.results;
@@ -69,16 +68,16 @@ class _NewsFeedState extends State<NewsFeed> {
         });
   }
 
-  Widget Function(BuildContext, int) _buildResultCard(List<Result> results) =>
+  Widget Function(BuildContext, int) _buildResultCard(List<Document> results) =>
       (BuildContext context, int index) {
         final result = results[index];
-        final imageUri = result.imageUri;
+        final imageUri = result.webResource.displayUrl;
 
         return Stack(
           children: [
-            if (imageUri != null)
+            if (imageUri.toString() != 'https://www.xayn.com')
               Image.network(
-                result.imageUri.toString(),
+                result.webResource.displayUrl.toString(),
                 errorBuilder: (context, e, s) => Container(),
               ),
             Container(
@@ -89,7 +88,17 @@ class _NewsFeedState extends State<NewsFeed> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    result.uri.toString(),
+                    result.webResource.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 16.0,
+                  ),
+                  Text(
+                    result.webResource.url.toString(),
                     style: const TextStyle(
                       color: Colors.lightBlue,
                       fontSize: 14,
@@ -99,7 +108,7 @@ class _NewsFeedState extends State<NewsFeed> {
                     height: 16.0,
                   ),
                   Text(
-                    result.description,
+                    result.webResource.snippet,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,

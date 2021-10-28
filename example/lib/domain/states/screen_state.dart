@@ -1,5 +1,4 @@
-import 'package:xayn_architecture_example/domain/entities/result.dart';
-import 'package:xayn_architecture_example/domain/entities/user.dart';
+import 'package:xayn_architecture_example/domain/entities/document.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:flutter/foundation.dart';
 
@@ -11,9 +10,7 @@ class ScreenState with _$ScreenState {
   const ScreenState._();
 
   const factory ScreenState({
-    List<Result>? results,
-    User? user,
-    int? position,
+    List<Document>? results,
     bool? hasError,
   }) = _ScreenState;
 
