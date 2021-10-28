@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:xayn_architecture/concepts/use_case.dart';
+import 'package:xayn_architecture/xayn_architecture.dart';
 import 'package:xayn_architecture_example/domain/entities/result.dart';
 import 'package:xayn_architecture_example/domain/use_cases/news_feed/news_feed.dart';
 import 'package:xayn_architecture_example/domain/use_cases/logger_use_case.dart';
@@ -58,13 +59,13 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
               )),
         )
         .fold(
-          onSuccess: (it, state) => it.isComplete
+          onSuccess: (it) => it.isComplete
               ? _extractFakeKeywordAndEmit(it.results)
               : const DiscoveryApiState(results: [], isComplete: false),
-          onFailure: (e, s, state) {
+          onFailure: HandleFailure((e, s) {
             //print('$e $s');
             return DiscoveryApiState.error(error: e, stackTrace: s);
-          },
+          }),
         );
   }
 

@@ -27,14 +27,14 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
               : Stream.value(state.results)),
         )
         .fold(
-          onSuccess: (it, state) => state.copyWith(
+          onSuccess: (it) => state.copyWith(
             results: it,
             hasError: false,
           ), // todo: instead of null, a loading state
-          onFailure: (e, s, state) {
+          onFailure: HandleFailure((e, s) {
             //print('$e $s');
             return ScreenState.error();
-          },
+          }),
         );
   }
 

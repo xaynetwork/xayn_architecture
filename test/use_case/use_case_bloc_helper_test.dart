@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:test/test.dart';
+import 'package:xayn_architecture/concepts/on_failure.dart';
 import 'package:xayn_architecture/concepts/use_case.dart';
 
 import 'helpers/use_cases.dart';
@@ -13,8 +14,8 @@ void main() {
               initialState: -1.0,
               initialData: 0,
               useCase: IntToDoubleUseCase(),
-              onSuccess: (double it, state) => it,
-              onFailure: (e, s, state) => -2.0,
+              onSuccess: (double it) => it,
+              onFailure: HandleFailure((e, s) => -2.0),
             ),
         expect: () => const [.0]);
 
@@ -23,8 +24,8 @@ void main() {
               initialState: -1.0,
               initialData: 0,
               useCase: IntToDoubleGeneratorUseCase(),
-              onSuccess: (double it, state) => it,
-              onFailure: (e, s, state) => -2.0,
+              onSuccess: (double it) => it,
+              onFailure: HandleFailure((e, s) => -2.0),
             ),
         expect: () => const [.0]);
 
@@ -33,8 +34,8 @@ void main() {
             initialState: '-1.0',
             initialData: 0,
             useCase: IntToDoubleUseCase(),
-            onSuccess: (String it, state) => it,
-            onFailure: (e, s, state) => '-2.0',
+            onSuccess: (String it) => it,
+            onFailure: HandleFailure((e, s) => '-2.0'),
             transformer: (Stream<double> out) =>
                 out.map((it) => it.toString())),
         expect: () => const ['0.0']);
@@ -44,9 +45,9 @@ void main() {
             initialState: -1.0,
             initialData: 0,
             useCase: IntToDoubleUseCase(),
-            onSuccess: (double it, state) => it,
-            onFailure: (e, s, state) => -2.0,
-            guard: (double oldState, double nextState) => nextState > .0),
+            onSuccess: (double it) => it,
+            onFailure: HandleFailure((e, s) => -2.0),
+            guard: (double nextState) => nextState > .0),
         expect: () => const []);
   });
 
@@ -55,8 +56,8 @@ void main() {
         build: () => TestCubit.pipe(
               initialState: -1.0,
               useCase: IntToDoubleUseCase(),
-              onSuccess: (double it, state) => it,
-              onFailure: (e, s, state) => -2.0,
+              onSuccess: (double it) => it,
+              onFailure: HandleFailure((e, s) => -2.0),
             ),
         act: (TestCubit<double, int, double, double> cubit) {
           cubit.onHandler(1);
@@ -69,8 +70,8 @@ void main() {
         build: () => TestCubit.pipe(
               initialState: -1.0,
               useCase: IntToDoubleGeneratorUseCase(),
-              onSuccess: (double it, state) => it,
-              onFailure: (e, s, state) => -2.0,
+              onSuccess: (double it) => it,
+              onFailure: HandleFailure((e, s) => -2.0),
             ),
         act: (TestCubit<double, int, double, double> cubit) {
           cubit.onHandler(1);
@@ -83,8 +84,8 @@ void main() {
         build: () => TestCubit<String, int, double, String>.pipe(
             initialState: '-1.0',
             useCase: IntToDoubleUseCase(),
-            onSuccess: (String it, state) => it,
-            onFailure: (e, s, state) => '-2.0',
+            onSuccess: (String it) => it,
+            onFailure: HandleFailure((e, s) => '-2.0'),
             transformer: (Stream<double> out) =>
                 out.map((it) => it.toString())),
         act: (TestCubit<String, int, double, String> cubit) {
@@ -98,15 +99,42 @@ void main() {
         build: () => TestCubit.pipe(
             initialState: -1.0,
             useCase: IntToDoubleUseCase(),
-            onSuccess: (double it, state) => it,
-            onFailure: (e, s, state) => -2.0,
-            guard: (double oldState, double nextState) => nextState > .0),
+            onSuccess: (double it) => it,
+            onFailure: HandleFailure((e, s) => -2.0),
+            guard: (double nextState) => nextState > .0),
         act: (TestCubit<double, int, double, double> cubit) {
           cubit.onHandler(1);
           cubit.onHandler(2);
           cubit.onHandler(3);
         },
         expect: () => const [3.0]);
+
+    blocTest('catch specific error Type: ',
+        build: () => TestCubit.pipe(
+              initialState: '-1',
+              useCase: MultiOutputWithFailureUseCase(),
+              onSuccess: (String it) => it,
+              onFailure: HandleFailure(
+                (e, s) => 'Exception',
+                matchers: {
+                  On<ArgumentError>((e, s) => 'ArgumentError'),
+                  On<StateError>((e, s) => 'StateError'),
+                  On<TypeError>((e, s) => 'TypeError'),
+                },
+              ),
+            ),
+        act: (TestCubit<String, int, String, String> cubit) {
+          //cubit.onHandler(1); // ArgumentError
+          cubit.onHandler(2); // StateError
+          //cubit.onHandler(3); // TypeError
+          //cubit.onHandler(4); // Exception
+        },
+        expect: () => const [
+              /*'ArgumentError',*/
+              'StateError',
+              /*'TypeError',*/
+              /*'Exception',*/
+            ]);
   });
 }
 
