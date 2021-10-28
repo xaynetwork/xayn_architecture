@@ -51,10 +51,12 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
           (out) => out
               .followedBy(LoggerUseCase((it) => 'will fetch $it'))
               .followedBy(_callEndpointUseCase)
-              .followedBy(LoggerUseCase(
-                (it) => 'did fetch ${it.results.length} results',
-                when: (it) => it.isComplete,
-              )),
+              .followedBy(
+                LoggerUseCase(
+                  (it) => 'did fetch ${it.results.length} results',
+                  when: (it) => it.isComplete,
+                ),
+              ),
         )
         .fold(
           onSuccess: (it) => it.isComplete
@@ -64,8 +66,17 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
               (e, s) => DiscoveryApiState.error(error: e, stackTrace: s),
               matchers: {
                 On<CallEndpointError>(
-                    (e, s) => DiscoveryApiState.error(error: e, stackTrace: s)),
+                  (e, s) => DiscoveryApiState.error(error: e, stackTrace: s),
+                ),
               }),
+          guard: (nextState) {
+            if (nextState.hasError && state.hasError) {
+              // avoid emitting another error if we already are showing one
+              return false;
+            }
+
+            return true;
+          },
         );
   }
 
@@ -116,7 +127,9 @@ class DiscoveryApiState {
   final Object? error;
   final StackTrace? stackTrace;
 
-  bool get isLoading => !isComplete && results.isEmpty && error == null;
+  bool get isLoading => !isComplete && results.isEmpty && !hasError;
+
+  bool get hasError => error != null;
 
   const DiscoveryApiState({
     required this.results,

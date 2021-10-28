@@ -104,10 +104,11 @@ class _SinkResolver<In, Out, State> extends _Resolver<In, Out, State>
     required UseCaseResultErrorHandler<State> onFailure,
     Guard<State>? guard,
   }) {
+    final safeGuard = guard ?? (_) => true;
     final subscription = _stream
         .map((it) => onSuccess(it))
         .onErrorReturnWith((e, s) => onFailure(e, s))
-        .where((it) => it != null && guard != null ? guard(it) : true)
+        .where((it) => it != null && safeGuard(it))
         .listen(_onState);
 
     _subscriptions.add(subscription);
