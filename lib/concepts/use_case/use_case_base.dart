@@ -95,6 +95,7 @@ class UseCaseException {
 /// An extension on `Stream` which allows easily chaining multiple
 /// `useCase`s in sequence.
 ///
+/// ```dart
 /// pipe(initialUseCase)
 ///   .transform(
 ///     (out) => out
@@ -106,6 +107,7 @@ class UseCaseException {
 ///     onSuccess: (results, state) => state.copyWith(results: results),
 ///     onFailure: (e, s, state) => const ScreenState.errorFetchingResults(),
 ///   );
+/// ```
 extension UseCaseExtension<In> on Stream<In> {
   Stream<Out> followedBy<Out>(UseCase<In, Out> useCase) => useCase
       .transform(this)

@@ -76,7 +76,11 @@ class _NewsFeedState extends State<NewsFeed> {
 
         return Stack(
           children: [
-            if (imageUri != null) Image.network(result.imageUri.toString()),
+            if (imageUri != null)
+              Image.network(
+                result.imageUri.toString(),
+                errorBuilder: (context, e, s) => Container(),
+              ),
             Container(
               color: const Color.fromARGB(128, 0, 0, 0),
               padding: const EdgeInsets.all(16.0),

@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:rxdart/transformers.dart';
+import 'package:xayn_architecture/concepts/on_failure.dart';
 import 'package:xayn_architecture/concepts/use_case.dart';
 import 'package:xayn_architecture/concepts/use_case/use_case_base.dart';
 
@@ -86,7 +87,6 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
 
     return _SinkResolver(
       stream,
-      () => state,
       (State? nextState) {
         if (nextState != null) {
           emit(nextState);
@@ -107,7 +107,6 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   }) =>
       _Resolver(
         Stream.value(initialData).followedBy(useCase),
-        () => state,
         (State? nextState) {
           if (nextState != null) {
             emit(nextState);

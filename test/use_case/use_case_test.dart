@@ -33,7 +33,7 @@ void main() {
     // emits the input 3 times, but as a String, and then throws an ArgumentException
     useCaseTest(
       'Can mix results and errors',
-      build: () => MultiOutputWithFailureUseCase(),
+      build: () => MixOutputAndErrorsUseCase(),
       input: [1],
       expect: [
         useCaseSuccess('1'),

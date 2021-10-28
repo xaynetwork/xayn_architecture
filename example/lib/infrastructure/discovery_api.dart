@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:xayn_architecture/concepts/use_case.dart';
+import 'package:xayn_architecture/xayn_architecture.dart';
 import 'package:xayn_architecture_example/domain/entities/result.dart';
+import 'package:xayn_architecture_example/domain/use_cases/news_feed/bing_call_endpoint_use_case.dart';
 import 'package:xayn_architecture_example/domain/use_cases/news_feed/news_feed.dart';
 import 'package:xayn_architecture_example/domain/use_cases/logger_use_case.dart';
 
@@ -32,7 +34,6 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
     with UseCaseBlocHelper<DiscoveryApiState> {
   final RequestBuilderUseCase _requestBuilderUseCase;
   final CallEndpointUseCase _callEndpointUseCase;
-  final DeserializeResultUseCase _deserializeResultUseCase;
   final Random rnd = Random();
 
   late final Handler<String> _handleQuery;
@@ -42,7 +43,6 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
   DiscoveryApi(
     this._requestBuilderUseCase,
     this._callEndpointUseCase,
-    this._deserializeResultUseCase,
   ) : super(const DiscoveryApiState.initial()) {
     nextFakeKeyword = randomKeywords[rnd.nextInt(randomKeywords.length)];
 
@@ -51,19 +51,39 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
           (out) => out
               .followedBy(LoggerUseCase((it) => 'will fetch $it'))
               .followedBy(_callEndpointUseCase)
-              .followedBy(_deserializeResultUseCase)
-              .followedBy(LoggerUseCase(
-                (it) => 'did fetch ${it.results.length} results',
-                when: (it) => it.isComplete,
-              )),
+              .followedBy(
+                LoggerUseCase(
+                  (it) => 'did fetch ${it.results.length} results',
+                  when: (it) => it.isComplete,
+                ),
+              ),
         )
         .fold(
-          onSuccess: (it, state) => it.isComplete
+          onSuccess: (it) => it.isComplete
               ? _extractFakeKeywordAndEmit(it.results)
-              : const DiscoveryApiState(results: [], isComplete: false),
-          onFailure: (e, s, state) {
-            //print('$e $s');
-            return DiscoveryApiState.error(error: e, stackTrace: s);
+              : const DiscoveryApiState.loading(),
+          onFailure: HandleFailure(
+              (e, s) => DiscoveryApiState.error(error: e, stackTrace: s),
+              matchers: {
+                On<CallEndpointError>(
+                  (e, s) => DiscoveryApiState.error(error: e, stackTrace: s),
+                ),
+              }),
+          guard: (nextState) {
+            // allow going from loading state to filled state
+            if (state.isLoading && nextState.isComplete) return true;
+
+            // allow going from loading state to error state
+            if (state.isLoading && nextState.hasError) return true;
+
+            // allow going from error state to loading state
+            if (state.hasError && nextState.isLoading) return true;
+
+            // allow going from loaded state to loading state
+            if (state.isComplete && nextState.isLoading) return true;
+
+            // disallow any other changes
+            return false;
           },
         );
   }
@@ -115,6 +135,10 @@ class DiscoveryApiState {
   final Object? error;
   final StackTrace? stackTrace;
 
+  bool get isLoading => !isComplete && results.isEmpty && !hasError;
+
+  bool get hasError => error != null;
+
   const DiscoveryApiState({
     required this.results,
     required this.isComplete,
@@ -122,6 +146,12 @@ class DiscoveryApiState {
         stackTrace = null;
 
   const DiscoveryApiState.initial()
+      : results = const [],
+        isComplete = false,
+        error = null,
+        stackTrace = null;
+
+  const DiscoveryApiState.loading()
       : results = const [],
         isComplete = false,
         error = null,
