@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:xayn_swipe_it/xayn_swipe_it.dart';
+
 import 'package:xayn_architecture_example/app/managers/news_feed_manager.dart';
 import 'package:xayn_architecture_example/app/managers/storage_manager.dart';
 import 'package:xayn_architecture_example/dependency_config.dart';
 import 'package:xayn_architecture_example/domain/entities/document.dart';
 import 'package:xayn_architecture_example/domain/states/screen_state.dart';
 import 'package:xayn_architecture_example/infrastructure/discovery_api.dart';
+
+enum SwipeOption { like, share, dislike }
 
 class NewsFeed extends StatefulWidget {
   const NewsFeed({Key? key}) : super(key: key);
@@ -62,9 +66,34 @@ class _NewsFeedState extends State<NewsFeed> {
             return Container();
           }
 
+          final childBuilder = _buildResultCard(results);
+
           return ListView.builder(
             controller: scrollController,
-            itemBuilder: _buildResultCard(results),
+            itemBuilder: (context, index) => SizedBox(
+              height: 320,
+              child: Swipe(
+                optionsLeft: const [SwipeOption.like, SwipeOption.share],
+                optionsRight: const [SwipeOption.dislike],
+                onFling: (options) => options.first,
+                child: childBuilder(context, index),
+                optionBuilder: (context, option, index, selected) {
+                  return SwipeOptionContainer(
+                    option: option,
+                    color: option == SwipeOption.dislike
+                        ? Colors.red
+                        : option == SwipeOption.like
+                            ? Colors.green
+                            : Colors.white,
+                    child: option == SwipeOption.dislike
+                        ? const Icon(Icons.close)
+                        : option == SwipeOption.like
+                            ? const Icon(Icons.verified)
+                            : const Icon(Icons.share),
+                  );
+                },
+              ),
+            ),
             itemCount: results.length,
           );
         });
