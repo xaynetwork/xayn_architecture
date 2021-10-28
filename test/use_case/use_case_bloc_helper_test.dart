@@ -49,6 +49,23 @@ void main() {
             onFailure: HandleFailure((e, s) => -2.0),
             guard: (double nextState) => nextState > .0),
         expect: () => const []);
+
+    blocTest('catch specific error Type: ',
+        build: () => TestCubit.consume(
+              initialState: '-1',
+              initialData: 2,
+              useCase: MultiOutputWithFailureUseCase(),
+              onSuccess: (String it) => it,
+              onFailure: HandleFailure(
+                (e, s) => 'Exception',
+                matchers: {
+                  On<ArgumentError>((e, s) => 'ArgumentError'),
+                  On<StateError>((e, s) => 'StateError'),
+                  On<TypeError>((e, s) => 'TypeError'),
+                },
+              ),
+            ),
+        expect: () => const ['StateError']);
   });
 
   group('pipe: ', () {
