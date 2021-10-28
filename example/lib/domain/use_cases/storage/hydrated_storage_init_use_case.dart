@@ -4,8 +4,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:xayn_architecture/xayn_architecture.dart';
 
 @injectable
-class StoragePrepperUseCase extends UseCase<void, bool> {
-  StoragePrepperUseCase();
+class HydratedStorageInitUseCase extends UseCase<void, bool> {
+  HydratedStorageInitUseCase();
 
   @override
   Stream<bool> transaction(void param) async* {
