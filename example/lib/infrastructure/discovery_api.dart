@@ -70,12 +70,20 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
                 ),
               }),
           guard: (nextState) {
-            if (nextState.hasError && state.hasError) {
-              // avoid emitting another error if we already are showing one
-              return false;
-            }
+            // allow going from loading state to filled state
+            if (state.isLoading && nextState.isComplete) return true;
 
-            return true;
+            // allow going from loading state to error state
+            if (state.isLoading && nextState.hasError) return true;
+
+            // allow going from error state to loading state
+            if (state.hasError && nextState.isLoading) return true;
+
+            // allow going from loaded state to loading state
+            if (state.isComplete && nextState.isLoading) return true;
+
+            // disallow any other changes
+            return false;
           },
         );
   }
