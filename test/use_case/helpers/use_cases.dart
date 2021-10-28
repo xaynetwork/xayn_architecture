@@ -43,6 +43,16 @@ class MultiOutputUseCase extends UseCase<int, String> {
   }
 }
 
+class MixOutputAndErrorsUseCase extends UseCase<int, String> {
+  @override
+  Stream<String> transaction(int param) async* {
+    yield param.toString();
+    yield param.toString();
+    yield param.toString();
+    throw ArgumentError('bad data!');
+  }
+}
+
 class MultiOutputWithFailureUseCase extends UseCase<int, String> {
   @override
   Stream<String> transaction(int param) async* {
