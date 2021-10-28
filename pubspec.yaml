@@ -11,10 +11,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  xayn_discovery_engine:
-    git:
-      url: git@github.com:xaynetwork/xayn_discovery_engine.git
-      path: discovery_engine
   envify: ^2.0.0
   get_it: ^7.0.0
   injectable: ^1.2.2
