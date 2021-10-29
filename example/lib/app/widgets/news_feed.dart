@@ -9,6 +9,9 @@ import 'package:xayn_architecture_example/dependency_config.dart';
 import 'package:xayn_architecture_example/domain/entities/document.dart';
 import 'package:xayn_architecture_example/domain/states/screen_state.dart';
 import 'package:xayn_architecture_example/infrastructure/discovery_api.dart';
+import 'package:xayn_swipe_it/xayn_swipe_it.dart';
+
+enum SwipeOption { like, share, dislike }
 
 class NewsFeed extends StatefulWidget {
   const NewsFeed({Key? key}) : super(key: key);
@@ -68,7 +71,7 @@ class _NewsFeedState extends State<NewsFeed> {
           child: PageView.builder(
             scrollDirection: Axis.vertical,
             controller: _pageController,
-            itemBuilder: _buildResultCard(results),
+            itemBuilder: _itemBuilder(results),
             itemCount: results.length,
           ),
         );
@@ -76,12 +79,41 @@ class _NewsFeedState extends State<NewsFeed> {
     );
   }
 
-  Widget Function(BuildContext, int) _buildResultCard(List<Document> results) =>
+  Widget Function(BuildContext, int) _itemBuilder(List<Document> results) =>
       (BuildContext context, int index) {
         final document = results[index];
         return Padding(
           padding: EdgeInsets.all(R.dimen.unit),
-          child: ResultCard(document: document),
+          child: _buildResultCard(document),
         );
       };
+
+  Widget _buildSwipeWidget({required Widget child}) => Swipe(
+        optionsLeft: const [SwipeOption.like, SwipeOption.share],
+        optionsRight: const [SwipeOption.dislike],
+        onFling: (options) => options.first,
+        child: child,
+        optionBuilder: (context, option, index, selected) {
+          return SwipeOptionContainer(
+            option: option,
+            color: option == SwipeOption.dislike
+                ? Colors.red
+                : option == SwipeOption.like
+                    ? Colors.green
+                    : Colors.white,
+            child: option == SwipeOption.dislike
+                ? const Icon(Icons.close)
+                : option == SwipeOption.like
+                    ? const Icon(Icons.verified)
+                    : const Icon(Icons.share),
+          );
+        },
+      );
+
+  Widget _buildResultCard(Document document) => Padding(
+        padding: EdgeInsets.all(R.dimen.unit),
+        child: _buildSwipeWidget(
+          child: ResultCard(document: document),
+        ),
+      );
 }
