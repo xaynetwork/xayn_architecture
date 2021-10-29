@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:xayn_architecture_example/app/constants/r.dart';
 import 'package:xayn_architecture_example/app/managers/news_feed_manager.dart';
 import 'package:xayn_architecture_example/app/managers/storage_manager.dart';
+import 'package:xayn_architecture_example/app/widgets/result_card.dart';
 import 'package:xayn_architecture_example/dependency_config.dart';
 import 'package:xayn_architecture_example/domain/entities/document.dart';
 import 'package:xayn_architecture_example/domain/states/screen_state.dart';
@@ -16,20 +18,20 @@ class NewsFeed extends StatefulWidget {
 }
 
 class _NewsFeedState extends State<NewsFeed> {
-  late final DiscoveryApi discoveryApi;
-  late final StorageManager storageManager;
-  late final ScrollController scrollController;
-  NewsFeedManager? newsFeedManager;
+  late final DiscoveryApi _discoveryApi;
+  late final StorageManager _storageManager;
+  late final PageController _pageController;
+  NewsFeedManager? _newsFeedManager;
 
   @override
   void initState() {
-    scrollController = ScrollController();
-    storageManager = di.get();
-    discoveryApi = di.get();
+    _pageController = PageController();
+    _storageManager = di.get();
+    _discoveryApi = di.get();
 
-    scrollController.addListener(() {
-      if (scrollController.position.atEdge && scrollController.offset != .0) {
-        discoveryApi.handleQuery('');
+    _pageController.addListener(() {
+      if (_pageController.position.atEdge && _pageController.offset != .0) {
+        _discoveryApi.handleQuery('');
       }
     });
 
@@ -39,13 +41,13 @@ class _NewsFeedState extends State<NewsFeed> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<StorageManager, StorageState>(
-      bloc: storageManager,
+      bloc: _storageManager,
       builder: (context, state) {
         if (!state.isReady) {
           return Container();
         }
 
-        newsFeedManager ??= di.get();
+        _newsFeedManager ??= di.get();
 
         return _buildFeed(context);
       },
@@ -54,72 +56,32 @@ class _NewsFeedState extends State<NewsFeed> {
 
   Widget _buildFeed(BuildContext context) {
     return BlocBuilder<NewsFeedManager, ScreenState>(
-        bloc: newsFeedManager,
-        builder: (context, state) {
-          final results = state.results;
+      bloc: _newsFeedManager,
+      builder: (context, state) {
+        final results = state.results;
 
-          if (results == null) {
-            return Container();
-          }
+        if (results == null) {
+          return const CircularProgressIndicator();
+        }
 
-          return ListView.builder(
-            controller: scrollController,
+        return SafeArea(
+          child: PageView.builder(
+            scrollDirection: Axis.vertical,
+            controller: _pageController,
             itemBuilder: _buildResultCard(results),
             itemCount: results.length,
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 
   Widget Function(BuildContext, int) _buildResultCard(List<Document> results) =>
       (BuildContext context, int index) {
-        final result = results[index];
-        final imageUri = result.webResource.displayUrl;
-
-        return Stack(
-          children: [
-            if (imageUri.toString() != 'https://www.xayn.com')
-              Image.network(
-                result.webResource.displayUrl.toString(),
-                errorBuilder: (context, e, s) => Container(),
-              ),
-            Container(
-              color: const Color.fromARGB(128, 0, 0, 0),
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    result.webResource.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 16.0,
-                  ),
-                  Text(
-                    result.webResource.url.toString(),
-                    style: const TextStyle(
-                      color: Colors.lightBlue,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 16.0,
-                  ),
-                  Text(
-                    result.webResource.snippet,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ],
+        final document = results[index];
+        return Padding(
+          padding: EdgeInsets.all(R.dimen.unit),
+          child: ResultCard(document: document),
         );
       };
 }
