@@ -1,6 +1,11 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:xayn_discovery_engine/discovery_engine.dart' as xayn;
+// ignore: implementation_imports
+import 'package:xayn_discovery_engine/src/api/events/base_events.dart';
+// ignore: implementation_imports
+import 'package:xayn_discovery_engine/src/api/events/search_events.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:xayn_architecture/concepts/use_case.dart';
@@ -36,18 +41,40 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
     implements xayn.DiscoveryEngine {
   final RequestBuilderUseCase _requestBuilderUseCase;
   final CallEndpointUseCase _callEndpointUseCase;
+  final StreamController<ClientEvent> _onClientEvent =
+      StreamController<ClientEvent>();
+  late final StreamSubscription<ClientEvent> _clientEventSubscription;
   final Random rnd = Random();
 
   late final Handler<String> _handleQuery;
 
   late String nextFakeKeyword;
 
+  Sink<ClientEvent> get onClientEvent => _onClientEvent.sink;
+
   DiscoveryApi(
     this._requestBuilderUseCase,
     this._callEndpointUseCase,
   ) : super(const DiscoveryApiState.initial()) {
+    _initGeneral();
+    _initHandlers();
+  }
+
+  @override
+  Future<void> close() {
+    _onClientEvent.close();
+    _clientEventSubscription.cancel();
+
+    return super.close();
+  }
+
+  void _initGeneral() {
     nextFakeKeyword = randomKeywords[rnd.nextInt(randomKeywords.length)];
 
+    _clientEventSubscription = _onClientEvent.stream.listen(_handleClientEvent);
+  }
+
+  void _initHandlers() {
     _handleQuery = pipe(_requestBuilderUseCase)
         .transform(
           (out) => out
@@ -90,7 +117,12 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
         );
   }
 
-  void handleQuery(String value) {
+  void _handleClientEvent(ClientEvent event) {
+    if (event is SearchRequested) _handleSearchEvent(event);
+  }
+
+  void _handleSearchEvent(SearchRequested event) {
+    // ignore event query for now
     _handleQuery(nextFakeKeyword);
   }
 

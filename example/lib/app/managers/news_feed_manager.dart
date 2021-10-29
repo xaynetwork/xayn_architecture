@@ -14,26 +14,28 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
 
   final DiscoveryResultsUseCase _discoveryResultsUseCase;
 
+  void handleResultIndex(int index) => emit(state.copyWith(
+        resultIndex: index,
+      ));
+
   @override
   void initHandlers() {
-    consume(
-      _discoveryResultsUseCase,
-      initialData: 3,
-    )
+    consume(_discoveryResultsUseCase, initialData: 3)
         .transform(
-          (out) => out.asyncExpand((it) => it.isComplete
-              ? Stream.value(it.results)
-                  .followedBy(ResultCombinerUseCase(state.results))
-              : Stream.value(state.results)),
-        )
+            (out) => out.followedBy(ResultCombinerUseCase(() => state.results)))
         .fold(
           onSuccess: (it) => state.copyWith(
-            results: it,
-            hasError: false,
+            results: it.documents,
+            resultIndex:
+                (state.resultIndex - it.removed).clamp(0, it.documents.length),
+            isComplete: it.apiState.isComplete,
+            isInErrorState: false,
           ), // todo: instead of null, a loading state
           onFailure: HandleFailure((e, s) {
             //print('$e $s');
-            return ScreenState.error();
+            return state.copyWith(
+              isInErrorState: true,
+            );
           }),
         );
   }
