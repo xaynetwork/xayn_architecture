@@ -12,8 +12,6 @@ class ResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUri = document.webResource.displayUrl;
-
     final title = Text(
       document.webResource.title,
       style: R.styles.appScreenHeadline?.copyWith(
@@ -62,7 +60,7 @@ class ResultCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(10.0),
       child: Stack(
         children: [
-          if (imageUri.toString() != 'https://www.xayn.com') image,
+          image,
           container,
         ],
       ),

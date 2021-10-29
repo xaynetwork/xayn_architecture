@@ -97,10 +97,10 @@ class _NewsFeedState extends State<NewsFeed> {
           return SwipeOptionContainer(
             option: option,
             color: option == SwipeOption.dislike
-                ? Colors.red
+                ? R.colors.swipeBackgroundDelete
                 : option == SwipeOption.like
-                    ? Colors.green
-                    : Colors.white,
+                    ? R.colors.swipeBackgroundRelevant
+                    : R.colors.swipeBackgroundShare,
             child: option == SwipeOption.dislike
                 ? const Icon(Icons.close)
                 : option == SwipeOption.like
