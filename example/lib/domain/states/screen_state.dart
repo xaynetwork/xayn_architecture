@@ -13,23 +13,15 @@ class ScreenState with _$ScreenState {
     List<Document>? results,
     required int resultIndex,
     required bool isComplete,
+    required bool isInErrorState,
   }) = _ScreenState;
 
-  factory ScreenState.empty() => const _ScreenState(
+  factory ScreenState.empty() => const ScreenState(
         resultIndex: 0,
         isComplete: false,
+        isInErrorState: false,
       );
 
   factory ScreenState.fromJson(Map<String, dynamic> json) =>
       _$ScreenStateFromJson(json);
-}
-
-@freezed
-class ScreenErrorState extends ScreenState with _$ScreenErrorState {
-  const ScreenErrorState._() : super._();
-
-  const factory ScreenErrorState() = _ScreenErrorState;
-
-  factory ScreenErrorState.fromJson(Map<String, dynamic> json) =>
-      _$ScreenErrorStateFromJson(json);
 }

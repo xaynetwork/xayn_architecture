@@ -24,11 +24,13 @@ class _$ScreenStateTearOff {
   _ScreenState call(
       {List<Document>? results,
       required int resultIndex,
-      required bool isComplete}) {
+      required bool isComplete,
+      required bool isInErrorState}) {
     return _ScreenState(
       results: results,
       resultIndex: resultIndex,
       isComplete: isComplete,
+      isInErrorState: isInErrorState,
     );
   }
 
@@ -45,6 +47,7 @@ mixin _$ScreenState {
   List<Document>? get results => throw _privateConstructorUsedError;
   int get resultIndex => throw _privateConstructorUsedError;
   bool get isComplete => throw _privateConstructorUsedError;
+  bool get isInErrorState => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -57,7 +60,11 @@ abstract class $ScreenStateCopyWith<$Res> {
   factory $ScreenStateCopyWith(
           ScreenState value, $Res Function(ScreenState) then) =
       _$ScreenStateCopyWithImpl<$Res>;
-  $Res call({List<Document>? results, int resultIndex, bool isComplete});
+  $Res call(
+      {List<Document>? results,
+      int resultIndex,
+      bool isComplete,
+      bool isInErrorState});
 }
 
 /// @nodoc
@@ -73,6 +80,7 @@ class _$ScreenStateCopyWithImpl<$Res> implements $ScreenStateCopyWith<$Res> {
     Object? results = freezed,
     Object? resultIndex = freezed,
     Object? isComplete = freezed,
+    Object? isInErrorState = freezed,
   }) {
     return _then(_value.copyWith(
       results: results == freezed
@@ -87,6 +95,10 @@ class _$ScreenStateCopyWithImpl<$Res> implements $ScreenStateCopyWith<$Res> {
           ? _value.isComplete
           : isComplete // ignore: cast_nullable_to_non_nullable
               as bool,
+      isInErrorState: isInErrorState == freezed
+          ? _value.isInErrorState
+          : isInErrorState // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -98,7 +110,11 @@ abstract class _$ScreenStateCopyWith<$Res>
           _ScreenState value, $Res Function(_ScreenState) then) =
       __$ScreenStateCopyWithImpl<$Res>;
   @override
-  $Res call({List<Document>? results, int resultIndex, bool isComplete});
+  $Res call(
+      {List<Document>? results,
+      int resultIndex,
+      bool isComplete,
+      bool isInErrorState});
 }
 
 /// @nodoc
@@ -116,6 +132,7 @@ class __$ScreenStateCopyWithImpl<$Res> extends _$ScreenStateCopyWithImpl<$Res>
     Object? results = freezed,
     Object? resultIndex = freezed,
     Object? isComplete = freezed,
+    Object? isInErrorState = freezed,
   }) {
     return _then(_ScreenState(
       results: results == freezed
@@ -130,6 +147,10 @@ class __$ScreenStateCopyWithImpl<$Res> extends _$ScreenStateCopyWithImpl<$Res>
           ? _value.isComplete
           : isComplete // ignore: cast_nullable_to_non_nullable
               as bool,
+      isInErrorState: isInErrorState == freezed
+          ? _value.isInErrorState
+          : isInErrorState // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -138,7 +159,10 @@ class __$ScreenStateCopyWithImpl<$Res> extends _$ScreenStateCopyWithImpl<$Res>
 @JsonSerializable()
 class _$_ScreenState extends _ScreenState with DiagnosticableTreeMixin {
   const _$_ScreenState(
-      {this.results, required this.resultIndex, required this.isComplete})
+      {this.results,
+      required this.resultIndex,
+      required this.isComplete,
+      required this.isInErrorState})
       : super._();
 
   factory _$_ScreenState.fromJson(Map<String, dynamic> json) =>
@@ -150,10 +174,12 @@ class _$_ScreenState extends _ScreenState with DiagnosticableTreeMixin {
   final int resultIndex;
   @override
   final bool isComplete;
+  @override
+  final bool isInErrorState;
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'ScreenState(results: $results, resultIndex: $resultIndex, isComplete: $isComplete)';
+    return 'ScreenState(results: $results, resultIndex: $resultIndex, isComplete: $isComplete, isInErrorState: $isInErrorState)';
   }
 
   @override
@@ -163,7 +189,8 @@ class _$_ScreenState extends _ScreenState with DiagnosticableTreeMixin {
       ..add(DiagnosticsProperty('type', 'ScreenState'))
       ..add(DiagnosticsProperty('results', results))
       ..add(DiagnosticsProperty('resultIndex', resultIndex))
-      ..add(DiagnosticsProperty('isComplete', isComplete));
+      ..add(DiagnosticsProperty('isComplete', isComplete))
+      ..add(DiagnosticsProperty('isInErrorState', isInErrorState));
   }
 
   @override
@@ -175,12 +202,18 @@ class _$_ScreenState extends _ScreenState with DiagnosticableTreeMixin {
             (identical(other.resultIndex, resultIndex) ||
                 other.resultIndex == resultIndex) &&
             (identical(other.isComplete, isComplete) ||
-                other.isComplete == isComplete));
+                other.isComplete == isComplete) &&
+            (identical(other.isInErrorState, isInErrorState) ||
+                other.isInErrorState == isInErrorState));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType,
-      const DeepCollectionEquality().hash(results), resultIndex, isComplete);
+  int get hashCode => Object.hash(
+      runtimeType,
+      const DeepCollectionEquality().hash(results),
+      resultIndex,
+      isComplete,
+      isInErrorState);
 
   @JsonKey(ignore: true)
   @override
@@ -197,7 +230,8 @@ abstract class _ScreenState extends ScreenState {
   const factory _ScreenState(
       {List<Document>? results,
       required int resultIndex,
-      required bool isComplete}) = _$_ScreenState;
+      required bool isComplete,
+      required bool isInErrorState}) = _$_ScreenState;
   const _ScreenState._() : super._();
 
   factory _ScreenState.fromJson(Map<String, dynamic> json) =
@@ -210,111 +244,9 @@ abstract class _ScreenState extends ScreenState {
   @override
   bool get isComplete;
   @override
+  bool get isInErrorState;
+  @override
   @JsonKey(ignore: true)
   _$ScreenStateCopyWith<_ScreenState> get copyWith =>
       throw _privateConstructorUsedError;
-}
-
-ScreenErrorState _$ScreenErrorStateFromJson(Map<String, dynamic> json) {
-  return _ScreenErrorState.fromJson(json);
-}
-
-/// @nodoc
-class _$ScreenErrorStateTearOff {
-  const _$ScreenErrorStateTearOff();
-
-  _ScreenErrorState call() {
-    return const _ScreenErrorState();
-  }
-
-  ScreenErrorState fromJson(Map<String, Object?> json) {
-    return ScreenErrorState.fromJson(json);
-  }
-}
-
-/// @nodoc
-const $ScreenErrorState = _$ScreenErrorStateTearOff();
-
-/// @nodoc
-mixin _$ScreenErrorState {
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $ScreenErrorStateCopyWith<$Res> {
-  factory $ScreenErrorStateCopyWith(
-          ScreenErrorState value, $Res Function(ScreenErrorState) then) =
-      _$ScreenErrorStateCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class _$ScreenErrorStateCopyWithImpl<$Res>
-    implements $ScreenErrorStateCopyWith<$Res> {
-  _$ScreenErrorStateCopyWithImpl(this._value, this._then);
-
-  final ScreenErrorState _value;
-  // ignore: unused_field
-  final $Res Function(ScreenErrorState) _then;
-}
-
-/// @nodoc
-abstract class _$ScreenErrorStateCopyWith<$Res> {
-  factory _$ScreenErrorStateCopyWith(
-          _ScreenErrorState value, $Res Function(_ScreenErrorState) then) =
-      __$ScreenErrorStateCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$ScreenErrorStateCopyWithImpl<$Res>
-    extends _$ScreenErrorStateCopyWithImpl<$Res>
-    implements _$ScreenErrorStateCopyWith<$Res> {
-  __$ScreenErrorStateCopyWithImpl(
-      _ScreenErrorState _value, $Res Function(_ScreenErrorState) _then)
-      : super(_value, (v) => _then(v as _ScreenErrorState));
-
-  @override
-  _ScreenErrorState get _value => super._value as _ScreenErrorState;
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$_ScreenErrorState extends _ScreenErrorState
-    with DiagnosticableTreeMixin {
-  const _$_ScreenErrorState() : super._();
-
-  factory _$_ScreenErrorState.fromJson(Map<String, dynamic> json) =>
-      _$$_ScreenErrorStateFromJson(json);
-
-  @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'ScreenErrorState()';
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties..add(DiagnosticsProperty('type', 'ScreenErrorState'));
-  }
-
-  @override
-  bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _ScreenErrorState);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$_ScreenErrorStateToJson(this);
-  }
-}
-
-abstract class _ScreenErrorState extends ScreenErrorState {
-  const factory _ScreenErrorState() = _$_ScreenErrorState;
-  const _ScreenErrorState._() : super._();
-
-  factory _ScreenErrorState.fromJson(Map<String, dynamic> json) =
-      _$_ScreenErrorState.fromJson;
 }

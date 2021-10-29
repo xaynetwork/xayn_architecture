@@ -13,6 +13,7 @@ _$_ScreenState _$$_ScreenStateFromJson(Map<String, dynamic> json) =>
           .toList(),
       resultIndex: json['resultIndex'] as int,
       isComplete: json['isComplete'] as bool,
+      isInErrorState: json['isInErrorState'] as bool,
     );
 
 Map<String, dynamic> _$$_ScreenStateToJson(_$_ScreenState instance) =>
@@ -20,10 +21,5 @@ Map<String, dynamic> _$$_ScreenStateToJson(_$_ScreenState instance) =>
       'results': instance.results,
       'resultIndex': instance.resultIndex,
       'isComplete': instance.isComplete,
+      'isInErrorState': instance.isInErrorState,
     };
-
-_$_ScreenErrorState _$$_ScreenErrorStateFromJson(Map<String, dynamic> json) =>
-    _$_ScreenErrorState();
-
-Map<String, dynamic> _$$_ScreenErrorStateToJson(_$_ScreenErrorState instance) =>
-    <String, dynamic>{};

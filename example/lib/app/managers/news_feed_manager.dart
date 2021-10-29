@@ -22,17 +22,20 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
   void initHandlers() {
     consume(_discoveryResultsUseCase, initialData: 3)
         .transform(
-            (out) => out.followedBy(ResultCombinerUseCase(state.results)))
+            (out) => out.followedBy(ResultCombinerUseCase(() => state.results)))
         .fold(
           onSuccess: (it) => state.copyWith(
             results: it.documents,
-            resultIndex: (state.resultIndex - it.removed)
-                .clamp(0, it.documents.length - 1),
+            resultIndex:
+                (state.resultIndex - it.removed).clamp(0, it.documents.length),
             isComplete: it.apiState.isComplete,
+            isInErrorState: false,
           ), // todo: instead of null, a loading state
           onFailure: HandleFailure((e, s) {
             //print('$e $s');
-            return const ScreenErrorState();
+            return state.copyWith(
+              isInErrorState: true,
+            );
           }),
         );
   }

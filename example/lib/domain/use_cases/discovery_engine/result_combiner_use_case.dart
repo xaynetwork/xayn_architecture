@@ -6,15 +6,17 @@ import 'package:xayn_architecture_example/infrastructure/discovery_api.dart';
 
 class ResultCombinerUseCase
     extends UseCase<DiscoveryApiState, ResultCombinerJob> {
-  final List<Document>? _currentResults;
+  final List<Document>? Function() _currentResults;
 
   ResultCombinerUseCase(this._currentResults);
 
   @override
   Stream<ResultCombinerJob> transaction(DiscoveryApiState param) async* {
+    final currentResults = _currentResults();
+
     if (param.isComplete) {
       final queue = Queue<Document>.from(
-          [..._currentResults ?? const [], ...param.results]);
+          [...currentResults ?? const [], ...param.results]);
       var removals = 0;
 
       // reduce to max 15 items
@@ -31,7 +33,7 @@ class ResultCombinerUseCase
       );
     } else {
       yield ResultCombinerJob(
-        _currentResults ?? const [],
+        currentResults ?? const [],
         added: 0,
         removed: 0,
         apiState: param,
