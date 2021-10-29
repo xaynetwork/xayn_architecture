@@ -20,6 +20,9 @@ dependencies:
     git:
       url: git@github.com:xaynetwork/xayn_swipe_it.git
       ref: 04bc3acd355b906cd23ddcf1879ea8543222157d
+  xayn_readability:
+    git:
+      url: git@github.com:xaynetwork/xayn_readability.git
   envify: ^2.0.0
   get_it: ^7.0.0
   http: ^0.13.4
