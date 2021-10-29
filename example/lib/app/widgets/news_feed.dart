@@ -10,6 +10,11 @@ import 'package:xayn_architecture_example/domain/entities/document.dart';
 import 'package:xayn_architecture_example/domain/states/screen_state.dart';
 import 'package:xayn_architecture_example/infrastructure/discovery_api.dart';
 
+// ignore: implementation_imports
+import 'package:xayn_discovery_engine/src/api/events/search_events.dart';
+// ignore: implementation_imports
+import 'package:xayn_discovery_engine/src/api/models/search_type.dart';
+
 enum SwipeOption { like, share, dislike }
 
 class NewsFeed extends StatefulWidget {
@@ -33,7 +38,8 @@ class _NewsFeedState extends State<NewsFeed> {
 
     scrollController.addListener(() {
       if (scrollController.position.atEdge && scrollController.offset != .0) {
-        discoveryApi.handleQuery('');
+        discoveryApi.onClientEvent
+            .add(const SearchRequested('', [SearchType.web]));
       }
     });
 

@@ -11,14 +11,16 @@ class ScreenState with _$ScreenState {
 
   const factory ScreenState({
     List<Document>? results,
-    bool? hasError,
+    required int resultIndex,
+    required bool isComplete,
+    required bool isInErrorState,
   }) = _ScreenState;
 
-  factory ScreenState.empty() => const _ScreenState(hasError: false);
-
-  factory ScreenState.loading() => const _ScreenState(hasError: false);
-
-  factory ScreenState.error() => const _ScreenState(hasError: true);
+  factory ScreenState.empty() => const ScreenState(
+        resultIndex: 0,
+        isComplete: false,
+        isInErrorState: false,
+      );
 
   factory ScreenState.fromJson(Map<String, dynamic> json) =>
       _$ScreenStateFromJson(json);
