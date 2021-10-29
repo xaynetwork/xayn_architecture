@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:xayn_architecture_example/app/constants/r.dart';
-import 'package:xayn_architecture_example/domain/entities/document.dart';
 
 class ResultCard extends StatelessWidget {
-  final Document document;
-
   const ResultCard({
     Key? key,
-    required this.document,
+    required this.title,
+    required this.snippet,
+    required this.imageUrl,
   }) : super(key: key);
+
+  final String title;
+  final String snippet;
+  final String imageUrl;
 
   @override
   Widget build(BuildContext context) {
-    final title = Text(
-      document.webResource.title,
+    final titleWidget = Text(
+      title,
       style: R.styles.appScreenHeadline?.copyWith(
         color: R.colors.brightText,
       ),
@@ -23,8 +26,8 @@ class ResultCard extends StatelessWidget {
       height: R.dimen.unit6,
     );
 
-    final snippet = Text(
-      document.webResource.snippet,
+    final snippetWidget = Text(
+      snippet,
       style: R.styles.appBodyText?.copyWith(
         color: R.colors.brightText,
       ),
@@ -41,16 +44,16 @@ class ResultCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          title,
+          titleWidget,
           spacing,
-          snippet,
+          snippetWidget,
         ],
       ),
     );
 
     final image = Positioned.fill(
       child: Image.network(
-        document.webResource.displayUrl.toString(),
+        imageUrl,
         fit: BoxFit.cover,
         errorBuilder: (context, e, s) => Container(),
       ),

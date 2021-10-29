@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:xayn_architecture_example/app/constants/r.dart';
 import 'package:xayn_architecture_example/app/managers/news_feed_manager.dart';
 import 'package:xayn_architecture_example/app/managers/storage_manager.dart';
+import 'package:xayn_architecture_example/app/widgets/custom_page_scroll_physics.dart';
 import 'package:xayn_architecture_example/app/widgets/result_card.dart';
 import 'package:xayn_architecture_example/dependency_config.dart';
 import 'package:xayn_architecture_example/domain/entities/document.dart';
@@ -23,17 +24,17 @@ class NewsFeed extends StatefulWidget {
 class _NewsFeedState extends State<NewsFeed> {
   late final DiscoveryApi _discoveryApi;
   late final StorageManager _storageManager;
-  late final PageController _pageController;
+  late final ScrollController _scrollController;
   NewsFeedManager? _newsFeedManager;
 
   @override
   void initState() {
-    _pageController = PageController();
+    _scrollController = ScrollController();
     _storageManager = di.get();
     _discoveryApi = di.get();
 
-    _pageController.addListener(() {
-      if (_pageController.position.atEdge && _pageController.offset != .0) {
+    _scrollController.addListener(() {
+      if (_scrollController.position.atEdge && _scrollController.offset != .0) {
         _discoveryApi.handleQuery('');
       }
     });
@@ -66,15 +67,19 @@ class _NewsFeedState extends State<NewsFeed> {
         if (results == null) {
           return const CircularProgressIndicator();
         }
-
-        return SafeArea(
-          child: PageView.builder(
+        final padding = MediaQuery.of(context).padding;
+        final verticalPadding = padding.top + padding.bottom;
+        return LayoutBuilder(builder: (context, constraints) {
+          final pageSize = constraints.maxHeight - verticalPadding;
+          return ListView.builder(
+            itemExtent: pageSize,
+            physics: CustomPageScrollPhysics(pageSize: pageSize),
             scrollDirection: Axis.vertical,
-            controller: _pageController,
+            controller: _scrollController,
             itemBuilder: _itemBuilder(results),
             itemCount: results.length,
-          ),
-        );
+          );
+        });
       },
     );
   }
@@ -82,10 +87,7 @@ class _NewsFeedState extends State<NewsFeed> {
   Widget Function(BuildContext, int) _itemBuilder(List<Document> results) =>
       (BuildContext context, int index) {
         final document = results[index];
-        return Padding(
-          padding: EdgeInsets.all(R.dimen.unit),
-          child: _buildResultCard(document),
-        );
+        return _buildResultCard(document);
       };
 
   Widget _buildSwipeWidget({required Widget child}) => Swipe(
@@ -111,9 +113,16 @@ class _NewsFeedState extends State<NewsFeed> {
       );
 
   Widget _buildResultCard(Document document) => Padding(
-        padding: EdgeInsets.all(R.dimen.unit),
+        padding: EdgeInsets.symmetric(
+          horizontal: R.dimen.unit,
+          vertical: R.dimen.unit0_5,
+        ),
         child: _buildSwipeWidget(
-          child: ResultCard(document: document),
+          child: ResultCard(
+            title: document.webResource.title,
+            snippet: document.webResource.snippet,
+            imageUrl: document.webResource.displayUrl.toString(),
+          ),
         ),
       );
 }
