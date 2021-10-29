@@ -74,18 +74,24 @@ class _NewsFeedState extends State<NewsFeed> {
           return const CircularProgressIndicator();
         }
         final padding = MediaQuery.of(context).padding;
-        final verticalPadding = padding.top + padding.bottom;
-        return LayoutBuilder(builder: (context, constraints) {
-          final pageSize = constraints.maxHeight - verticalPadding;
-          return ListView.builder(
-            itemExtent: pageSize,
-            physics: CustomPageScrollPhysics(pageSize: pageSize),
-            scrollDirection: Axis.vertical,
-            controller: _scrollController,
-            itemBuilder: _itemBuilder(results),
-            itemCount: results.length,
-          );
-        });
+        return Padding(
+          padding: EdgeInsets.only(top: padding.top),
+          child: LayoutBuilder(builder: (context, constraints) {
+            final pageSize = constraints.maxHeight - padding.bottom;
+            return MediaQuery.removePadding(
+              context: context,
+              removeTop: true,
+              child: ListView.builder(
+                itemExtent: pageSize,
+                physics: CustomPageScrollPhysics(pageSize: pageSize),
+                scrollDirection: Axis.vertical,
+                controller: _scrollController,
+                itemBuilder: _itemBuilder(results),
+                itemCount: results.length,
+              ),
+            );
+          }),
+        );
       },
     );
   }
