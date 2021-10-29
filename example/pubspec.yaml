@@ -20,6 +20,10 @@ dependencies:
     git:
       url: git@github.com:xaynetwork/xayn_design.git
       ref: aabc86fd036a1977eae251081ce3c70d0d12ab8f
+  xayn_swipe_it:
+    git:
+      url: git@github.com:xaynetwork/xayn_swipe_it.git
+      ref: 04bc3acd355b906cd23ddcf1879ea8543222157d
   envify: ^2.0.0
   get_it: ^7.0.0
   http: ^0.13.4
