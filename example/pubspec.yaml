@@ -27,6 +27,7 @@ dependencies:
   xayn_readability:
     git:
       url: git@github.com:xaynetwork/xayn_readability.git
+  palette_generator: ^0.3.2
   envify: ^2.0.0
   get_it: ^7.0.0
   http: ^0.13.4

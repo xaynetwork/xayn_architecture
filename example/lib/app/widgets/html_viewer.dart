@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:xayn_architecture_example/app/constants/r.dart';
 import 'package:xayn_readability/xayn_readability.dart';
 
 const String kUserAgent =
@@ -51,7 +52,10 @@ class _HtmlViewerState extends State<HtmlViewer> {
       classesToPreserve: kClassesToPreserve,
       userAgent: kUserAgent,
       controller: controller,
-      onNavigation: (from, to) => controller.loadUri(to),
+      textStyle: R.styles.appBodyText?.copyWith(
+        color: R.colors.brightText,
+        fontSize: R.dimen.unit2,
+      ),
     );
   }
 }

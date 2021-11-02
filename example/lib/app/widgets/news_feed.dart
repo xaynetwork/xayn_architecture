@@ -134,6 +134,7 @@ class _NewsFeedState extends State<NewsFeed> {
             title: document.webResource.title,
             snippet: document.webResource.snippet,
             imageUrl: document.webResource.displayUrl.toString(),
+            url: document.webResource.url,
           ),
         ),
       );
