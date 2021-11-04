@@ -14,6 +14,7 @@ dependencies:
     git:
       url: git@github.com:xaynetwork/xayn_discovery_engine.git
       path: discovery_engine
+      ref: ef71f30e42f5c6aa5788292adb370ffb5839abbf
   xayn_architecture:
     path: .././
   xayn_design:

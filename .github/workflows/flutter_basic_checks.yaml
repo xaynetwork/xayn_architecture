@@ -39,9 +39,6 @@ jobs:
       - name: Flutter Analyze
         run: |
           flutter analyze lib test
-          cd example
-          flutter analyze lib
-          cd -
       - name: Run Tests
         run: |
           flutter test
