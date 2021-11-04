@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:rxdart/transformers.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:xayn_architecture/concepts/use_case/emit_on_transformer.dart';
 import 'package:xayn_architecture/concepts/use_case/use_case_transformer.dart';
 
 /// {@template use_case}
@@ -112,4 +113,14 @@ extension UseCaseExtension<In> on Stream<In> {
   Stream<Out> followedBy<Out>(UseCase<In, Out> useCase) => useCase
       .transform(this)
       .transform(UseCaseStreamTransformer<In, Out>(useCase.transaction));
+
+  Stream<In> maybeResolveEarly<State>(
+          {required Test<In> condition,
+          required StateBuilder<In, State> stateBuilder,
+          bool swallowEvent = true}) =>
+      transform(EmitOnTransformer<In, State>(
+        test: condition,
+        stateBuilder: stateBuilder,
+        swallowEvent: swallowEvent,
+      ));
 }

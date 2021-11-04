@@ -80,6 +80,9 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
           (out) => out
               .followedBy(LoggerUseCase((it) => 'will fetch $it'))
               .followedBy(_callEndpointUseCase)
+              .maybeResolveEarly(
+                  condition: (data) => !data.isComplete,
+                  stateBuilder: (data) => const DiscoveryApiState.loading())
               .followedBy(
                 LoggerUseCase(
                   (it) => 'did fetch ${it.results.length} results',
@@ -88,9 +91,7 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
               ),
         )
         .fold(
-          onSuccess: (it) => it.isComplete
-              ? _extractFakeKeywordAndEmit(it.results)
-              : const DiscoveryApiState.loading(),
+          onSuccess: (it) => _extractFakeKeywordAndEmit(it.results),
           onFailure: HandleFailure(
               (e, s) => DiscoveryApiState.error(error: e, stackTrace: s),
               matchers: {

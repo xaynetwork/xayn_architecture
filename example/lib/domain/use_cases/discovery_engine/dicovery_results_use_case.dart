@@ -5,7 +5,7 @@ import 'package:xayn_architecture_example/infrastructure/discovery_api.dart';
 // ignore: implementation_imports
 import 'package:xayn_discovery_engine/src/api/events/search_events.dart';
 // ignore: implementation_imports
-import 'package:xayn_discovery_engine/src/api/models/search_type.dart';
+import 'package:xayn_discovery_engine/src/domain/models/search_type.dart';
 
 @injectable
 class DiscoveryResultsUseCase extends UseCase<int, DiscoveryApiState> {

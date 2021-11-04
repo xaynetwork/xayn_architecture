@@ -43,9 +43,11 @@ class _PaletteState extends State<Palette> {
     final palette =
         await PaletteGenerator.fromImageProvider(widget.imageProvider);
 
-    setState(() {
-      _palette = palette;
-    });
+    if (mounted) {
+      setState(() {
+        _palette = palette;
+      });
+    }
   }
 
   @override

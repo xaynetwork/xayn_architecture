@@ -60,7 +60,7 @@ class _Resolver<In, Out, State> implements UseCaseResolver<In, Out, State> {
   }) {
     final subscription = _stream
         .map((it) => onSuccess(it))
-        .onErrorReturnWith((e, s) => onFailure(e, s))
+        .onErrorReturnWith(_checkError(onFailure))
         .where((it) => it != null && guard != null ? guard(it) : true)
         .listen(_onState);
 
@@ -78,6 +78,16 @@ class _Resolver<In, Out, State> implements UseCaseResolver<In, Out, State> {
       _subscriptions,
     );
   }
+
+  State? Function(Object e, StackTrace s) _checkError(
+          UseCaseResultErrorHandler<State> onFailure) =>
+      (Object e, StackTrace s) {
+        if (e is EmitOnInterceptor<State>) {
+          _onState(e.state);
+        } else {
+          return onFailure(e, s);
+        }
+      };
 }
 
 class _SinkResolver<In, Out, State> extends _Resolver<In, Out, State>
@@ -107,7 +117,7 @@ class _SinkResolver<In, Out, State> extends _Resolver<In, Out, State>
     final safeGuard = guard ?? (_) => true;
     final subscription = _stream
         .map((it) => onSuccess(it))
-        .onErrorReturnWith((e, s) => onFailure(e, s))
+        .onErrorReturnWith(_checkError(onFailure))
         .where((it) => it != null && safeGuard(it))
         .listen(_onState);
 

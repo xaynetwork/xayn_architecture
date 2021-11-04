@@ -12,11 +12,12 @@ class HandleFailure<T> {
 
   T call(dynamic e, StackTrace s) {
     final handlers = matchers ?? const {};
-    final defaultHandler = On((e, s) => onDefault(e, s));
+    final defaultHandler =
+        On<dynamic>((dynamic e, StackTrace s) => onDefault(e, s));
     final handler =
         handlers.firstWhere((it) => it._test(e), orElse: () => defaultHandler);
 
-    return handler._handle(e, s);
+    return handler._handle(e, s) as T;
   }
 }
 

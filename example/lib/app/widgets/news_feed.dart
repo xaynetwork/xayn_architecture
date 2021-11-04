@@ -15,7 +15,7 @@ import 'package:xayn_swipe_it/xayn_swipe_it.dart';
 // ignore: implementation_imports
 import 'package:xayn_discovery_engine/src/api/events/search_events.dart';
 // ignore: implementation_imports
-import 'package:xayn_discovery_engine/src/api/models/search_type.dart';
+import 'package:xayn_discovery_engine/src/domain/models/search_type.dart';
 
 enum SwipeOption { like, share, dislike }
 
