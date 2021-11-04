@@ -6,6 +6,7 @@ import 'package:bloc/bloc.dart';
 import 'package:rxdart/transformers.dart';
 import 'package:xayn_architecture/concepts/on_failure.dart';
 import 'package:xayn_architecture/concepts/use_case.dart';
+import 'package:xayn_architecture/concepts/use_case/emit_on_transformer.dart';
 import 'package:xayn_architecture/concepts/use_case/use_case_base.dart';
 
 part 'use_case_resolver.dart';
