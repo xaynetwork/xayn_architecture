@@ -158,12 +158,6 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
   }
 }
 
-class DiscoveryApiEvent {
-  final String query;
-
-  const DiscoveryApiEvent({required this.query});
-}
-
 class DiscoveryApiState {
   final List<Document> results;
   final bool isComplete;

@@ -9,10 +9,11 @@ class StorageManager extends Cubit<StorageState>
   final HydratedStorageInitUseCase _hydratedStorageInitUseCase;
 
   StorageManager(this._hydratedStorageInitUseCase)
-      : super(const StorageState.notReady());
+      : super(const StorageState.notReady()) {
+    _initHandlers();
+  }
 
-  @override
-  Future<void> initHandlers() async {
+  Future<void> _initHandlers() async {
     await _hydratedStorageInitUseCase(null);
 
     emit(const StorageState.ready());
