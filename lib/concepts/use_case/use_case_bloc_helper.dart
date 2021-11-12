@@ -21,39 +21,6 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   final List<StreamController> _subjects = <StreamController>[];
   final List<StreamSubscription<State?>> _subscriptions =
       <StreamSubscription<State?>>[];
-  var _didInitHandlers = false;
-
-  @override
-  Stream<State> get stream {
-    if (!_didInitHandlers) {
-      _didInitHandlers = true;
-
-      initHandlers();
-    }
-
-    return super.stream;
-  }
-
-  /// [initHandlers] is called right after `BlocBase` is created,
-  /// override this handler to setup any [Handler] methods.
-  ///
-  /// ```dart
-  /// late final OnHandler<User> _onUserUpdate;
-  ///
-  /// void onUserUpdate(User user) => _onUserUpdate(user);
-  ///
-  /// @override
-  /// void initHandlers() {
-  ///   _onUserUpdate = pipe(_userUpdateUseCase).fold(
-  ///     onSuccess: (it, state) => state.copyWith(
-  ///       user: it,
-  ///       hasError: false,
-  ///     ),
-  ///     onFailure: (e, s, state) => ScreenState.error(),
-  ///   );
-  /// }
-  /// ```
-  void initHandlers() {}
 
   @override
   Future<void> close() {
@@ -69,6 +36,13 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
 
     return super.close();
   }
+
+  State? computeState(
+    State currentState,
+    State? nextState,
+    UseCase useCase,
+  ) =>
+      nextState;
 
   /// Consumes the [useCase] as a `Stream` and wraps the `Sink.add` handler,
   /// which can then be resolved to a `Cubit`'s state.
@@ -89,8 +63,10 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
     return _SinkResolver(
       stream,
       (State? nextState) {
-        if (nextState != null) {
-          emit(nextState);
+        final computedState = computeState(state, nextState, useCase);
+
+        if (computedState != null) {
+          emit(computedState);
         }
       },
       _subscriptions,
@@ -109,8 +85,10 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
       _Resolver(
         Stream.value(initialData).followedBy(useCase),
         (State? nextState) {
-          if (nextState != null) {
-            emit(nextState);
+          final computedState = computeState(state, nextState, useCase);
+
+          if (computedState != null) {
+            emit(computedState);
           }
         },
         _subscriptions,

@@ -10,7 +10,9 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
     with UseCaseBlocHelper<ScreenState> {
   NewsFeedManager(
     this._discoveryResultsUseCase,
-  ) : super(ScreenState.empty());
+  ) : super(ScreenState.empty()) {
+    _initHandlers();
+  }
 
   final DiscoveryResultsUseCase _discoveryResultsUseCase;
 
@@ -18,8 +20,7 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
         resultIndex: index,
       ));
 
-  @override
-  void initHandlers() {
+  void _initHandlers() {
     consume(_discoveryResultsUseCase, initialData: 3)
         .transform(
             (out) => out.followedBy(ResultCombinerUseCase(() => state.results)))

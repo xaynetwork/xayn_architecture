@@ -61,7 +61,7 @@ class _Resolver<In, Out, State> implements UseCaseResolver<In, Out, State> {
     final subscription = _stream
         .map((it) => onSuccess(it))
         .onErrorReturnWith(_checkError(onFailure))
-        .where((it) => it != null && guard != null ? guard(it) : true)
+        .where((it) => it != null && (guard?.call(it) ?? true))
         .listen(_onState);
 
     _subscriptions.add(subscription);

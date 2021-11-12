@@ -5,61 +5,74 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:xayn_architecture/concepts/on_failure.dart';
 import 'package:xayn_architecture/concepts/use_case.dart';
+import 'package:xayn_architecture_example/domain/states/result_card_state.dart';
+import 'package:xayn_architecture_example/domain/use_cases/cards/palette_use_case.dart';
 import 'package:xayn_architecture_example/domain/use_cases/readability/html_fetcher_use_case.dart';
 import 'package:xayn_architecture_example/domain/use_cases/readability/make_readable_use_case.dart';
 import 'package:xayn_architecture_example/domain/use_cases/readability/process_html_use_case.dart';
-import 'package:xayn_readability/xayn_readability.dart';
 
 typedef UriHandler = void Function(Uri uri);
 
 @injectable
-class ReadabilityManager extends Cubit<ReadabilityState>
-    with UseCaseBlocHelper<ReadabilityState> {
+class ResultCardManager extends Cubit<ResultCardState>
+    with UseCaseBlocHelper<ResultCardState> {
   final HtmlFetcherUseCase _htmlFetcherUseCase;
   final MakeReadableUseCase _makeReadableUseCase;
   final ProcessHtmlUseCase _processHtmlUseCase;
+  final PaletteUseCase _paletteUseCase;
 
   late final UriHandler _updateUri;
+  late final UriHandler _updateImageUri;
 
-  ReadabilityManager(
+  ResultCardManager(
     this._htmlFetcherUseCase,
     this._makeReadableUseCase,
     this._processHtmlUseCase,
-  ) : super(const ReadabilityState.initial());
+    this._paletteUseCase,
+  ) : super(ResultCardState.initial()) {
+    init();
+  }
 
   void updateUri(Uri uri) => _updateUri(uri);
 
-  @override
-  Future<void> initHandlers() async {
+  void updateImageUri(Uri uri) => _updateImageUri(uri);
+
+  Future<void> init() async {
     _updateUri = pipe(_htmlFetcherUseCase)
         .transform(
           (out) => out
               .maybeResolveEarly(
                 condition: (it) => !it.isCompleted,
-                stateBuilder: (it) => const ReadabilityState.loading(),
+                stateBuilder: (it) => state.copyWith(isComplete: false),
               )
               .map(_createReadabilityConfig)
               .followedBy(_makeReadableUseCase)
               .followedBy(_processHtmlUseCase),
         )
         .fold(
-          onSuccess: (it) => ReadabilityState.ready(
+          onSuccess: (it) => state.copyWith(
             result: it.processHtmlResult,
             paragraphs: it.paragraphs,
+            images: it.images,
           ),
           onFailure: HandleFailure((e, st) {
             log('e: $e, st: $st');
-            return const ReadabilityState.error();
+            return ResultCardState.error();
           }, matchers: {
-            On<TimeoutException>((e, st) => const ReadabilityState.error())
+            On<TimeoutException>((e, st) => ResultCardState.error()),
+            On<FormatException>((e, st) => ResultCardState.error()),
           }),
-          guard: (next) {
-            // filter out excessive loading or initial states
-            if (!state.isComplete && !next.isComplete) return false;
-
-            return true;
-          },
         );
+
+    _updateImageUri = pipe(_paletteUseCase).fold(
+      onSuccess: (it) => state.copyWith(paletteGenerator: it),
+      onFailure: HandleFailure(
+        (e, st) {
+          log('e: $e, st: $st');
+          return ResultCardState.error();
+        },
+      ),
+    );
   }
 
   MakeReadableConfig _createReadabilityConfig(HtmlFetcherProgress progress) =>
@@ -69,30 +82,4 @@ class ReadabilityManager extends Cubit<ReadabilityState>
         disableJsonLd: true,
         classesToPreserve: const [],
       );
-}
-
-class ReadabilityState {
-  final bool isComplete;
-  final ProcessHtmlResult? result;
-  final List<String> paragraphs;
-
-  const ReadabilityState.initial()
-      : isComplete = false,
-        paragraphs = const [],
-        result = null;
-
-  const ReadabilityState.loading()
-      : isComplete = false,
-        paragraphs = const [],
-        result = null;
-
-  const ReadabilityState.error()
-      : isComplete = true,
-        paragraphs = const [],
-        result = null;
-
-  const ReadabilityState.ready({
-    required this.result,
-    required this.paragraphs,
-  }) : isComplete = true;
 }
