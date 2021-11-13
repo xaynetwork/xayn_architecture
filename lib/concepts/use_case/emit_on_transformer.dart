@@ -6,44 +6,44 @@ import 'package:rxdart/src/utils/forwarding_sink.dart';
 import 'package:rxdart/src/utils/forwarding_stream.dart';
 
 typedef Test<In> = bool Function(In data);
-typedef StateBuilder<In, State> = State Function(In);
+typedef Runner<In> = void Function(In);
 
 /// A `Stream` transformer that binds the events of a parent `Stream`, as
 /// the next input of a `useCase`.
-class EmitOnTransformer<In, State> extends StreamTransformerBase<In, In> {
+class EmitOnTransformer<In> extends StreamTransformerBase<In, In> {
   final Test<In> _test;
-  final StateBuilder<In, State> _stateBuilder;
+  final Runner<In> _whenTrue;
   final bool _swallowEvent;
 
   EmitOnTransformer({
     required Test<In> test,
-    required StateBuilder<In, State> stateBuilder,
+    required Runner<In> whenTrue,
     bool swallowEvent = true,
   })  : _test = test,
-        _stateBuilder = stateBuilder,
+        _whenTrue = whenTrue,
         _swallowEvent = swallowEvent;
 
   @override
   Stream<In> bind(Stream<In> stream) => forwardStream(
       stream,
-      () => _EmitOnSink(
+      () => _EmitOnSink<In>(
             test: _test,
-            stateBuilder: _stateBuilder,
+            whenTrue: _whenTrue,
             swallowEvent: _swallowEvent,
           ));
 }
 
-class _EmitOnSink<In, State> extends ForwardingSink<In, In> {
+class _EmitOnSink<In> extends ForwardingSink<In, In> {
   final Test<In> _test;
-  final StateBuilder<In, State> _stateBuilder;
+  final Runner<In> _whenTrue;
   final bool _swallowEvent;
 
   _EmitOnSink({
     required Test<In> test,
-    required StateBuilder<In, State> stateBuilder,
+    required Runner<In> whenTrue,
     bool swallowEvent = true,
   })  : _test = test,
-        _stateBuilder = stateBuilder,
+        _whenTrue = whenTrue,
         _swallowEvent = swallowEvent;
 
   @override
@@ -52,7 +52,13 @@ class _EmitOnSink<In, State> extends ForwardingSink<In, In> {
   @override
   void onData(In data) {
     if (_test(data)) {
-      sink.addError(EmitOnInterceptor(_stateBuilder(data)));
+      try {
+        _whenTrue(data);
+
+        sink.addError(const EmitOnInterceptor());
+      } catch (e, s) {
+        sink.addError(e, s);
+      }
 
       if (_swallowEvent) return;
     }
@@ -76,8 +82,6 @@ class _EmitOnSink<In, State> extends ForwardingSink<In, In> {
   void onResume() {}
 }
 
-class EmitOnInterceptor<State> {
-  final State state;
-
-  const EmitOnInterceptor(this.state);
+class EmitOnInterceptor {
+  const EmitOnInterceptor();
 }

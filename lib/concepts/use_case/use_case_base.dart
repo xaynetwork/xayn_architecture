@@ -114,13 +114,14 @@ extension UseCaseExtension<In> on Stream<In> {
       .transform(this)
       .transform(UseCaseStreamTransformer<In, Out>(useCase.transaction));
 
-  Stream<In> maybeResolveEarly<State>(
-          {required Test<In> condition,
-          required StateBuilder<In, State> stateBuilder,
-          bool swallowEvent = true}) =>
-      transform(EmitOnTransformer<In, State>(
+  Stream<In> scheduleComputeState({
+    required Test<In> condition,
+    required Runner<In> whenTrue,
+    bool swallowEvent = true,
+  }) =>
+      transform(EmitOnTransformer<In>(
         test: condition,
-        stateBuilder: stateBuilder,
+        whenTrue: whenTrue,
         swallowEvent: swallowEvent,
       ));
 }

@@ -3,14 +3,10 @@ library use_case_bloc_helper;
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:rxdart/transformers.dart';
-import 'package:xayn_architecture/concepts/on_failure.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:xayn_architecture/concepts/use_case.dart';
-import 'package:xayn_architecture/concepts/use_case/emit_on_transformer.dart';
+import 'package:xayn_architecture/concepts/use_case/either.dart';
 import 'package:xayn_architecture/concepts/use_case/use_case_base.dart';
-
-part 'use_case_resolver.dart';
-part 'use_case_subject.dart';
 
 /// A method signature, defines a Function with exactly one parameter.
 /// Used in or `cubit`s to define handlers that are exposed to widgets.
@@ -19,8 +15,7 @@ typedef Handler<Next> = void Function(Next data);
 /// A mixin which exposes [UseCase] helper methods for binding changes to the [BlocBase.state]
 mixin UseCaseBlocHelper<State> on BlocBase<State> {
   final List<StreamController> _subjects = <StreamController>[];
-  final List<StreamSubscription<State?>> _subscriptions =
-      <StreamSubscription<State?>>[];
+  final CompositeSubscription _subscriptions = CompositeSubscription();
   var _didInitHandlers = false;
 
   @override
@@ -28,38 +23,18 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
     if (!_didInitHandlers) {
       _didInitHandlers = true;
 
-      initHandlers();
+      computeState();
     }
 
     return super.stream;
   }
 
-  /// [initHandlers] is called right after `BlocBase` is created,
-  /// override this handler to setup any [Handler] methods.
-  ///
-  /// ```dart
-  /// late final OnHandler<User> _onUserUpdate;
-  ///
-  /// void onUserUpdate(User user) => _onUserUpdate(user);
-  ///
-  /// @override
-  /// void initHandlers() {
-  ///   _onUserUpdate = pipe(_userUpdateUseCase).fold(
-  ///     onSuccess: (it, state) => state.copyWith(
-  ///       user: it,
-  ///       hasError: false,
-  ///     ),
-  ///     onFailure: (e, s, state) => ScreenState.error(),
-  ///   );
-  /// }
-  /// ```
-  void initHandlers() {}
+  FutureOr<State?> computeState() {}
 
   @override
   Future<void> close() {
-    for (var it in _subscriptions) {
-      it.cancel();
-    }
+    _subscriptions.dispose();
+
     for (var subject in _subjects) {
       subject.close();
     }
@@ -78,23 +53,22 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   ///
   /// When using [UseCaseSinkResolver.close], then be aware that any future
   /// incoming events will throw a [StateError] on that same `sink`.
-  _SinkResolver<In, Out, State> pipe<In, Out>(
+  UseCaseSink<In, Out> pipe<In, Out>(
     UseCase<In, Out> useCase,
   ) {
-    final controller = StreamController<In>.broadcast();
-    final stream = controller.stream.followedBy(useCase);
+    final controller = StreamController<In>();
 
     _subjects.add(controller);
 
-    return _SinkResolver(
-      stream,
-      (State? nextState) {
-        if (nextState != null) {
-          emit(nextState);
-        }
+    return UseCaseSink(
+      controller.sink,
+      controller.stream.followedBy(useCase),
+      () async {
+        final nextState = await computeState();
+
+        if (nextState != null) emit(nextState);
       },
       _subscriptions,
-      controller.sink,
     );
   }
 
@@ -102,16 +76,16 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   /// The connection stays open, until `close` is called on the `Cubit`.
   ///
   /// Should you wish to prematurely close it, then use [UseCaseSubscription.cancel].
-  UseCaseResolver<In, Out, State> consume<In, Out>(
+  UseCaseValueStream<Out> consume<In, Out>(
     UseCase<In, Out> useCase, {
     required In initialData,
   }) =>
-      _Resolver(
-        Stream.value(initialData).followedBy(useCase),
-        (State? nextState) {
-          if (nextState != null) {
-            emit(nextState);
-          }
+      UseCaseValueStream(
+        Stream<In>.value(initialData).followedBy(useCase),
+        () async {
+          final nextState = await computeState();
+
+          if (nextState != null) emit(nextState);
         },
         _subscriptions,
       );

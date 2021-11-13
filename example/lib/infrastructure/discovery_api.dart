@@ -46,7 +46,7 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
   late final StreamSubscription<ClientEvent> _clientEventSubscription;
   final Random rnd = Random();
 
-  late final Handler<String> _handleQuery;
+  late final UseCaseSink<String, ResultsContainer> _handleQuery;
 
   late String nextFakeKeyword;
 
@@ -68,6 +68,25 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
     return super.close();
   }
 
+  @override
+  Future<DiscoveryApiState> computeState() async {
+    var nextState = state;
+
+    _handleQuery.fold(
+      defaultOnError: (e, s) {
+        nextState = DiscoveryApiState.error(
+          error: e,
+          stackTrace: s,
+        );
+      },
+      onValue: (it) {
+        nextState = _extractFakeKeywordAndEmit(it.results);
+      },
+    );
+
+    return nextState;
+  }
+
   void _initGeneral() {
     nextFakeKeyword = randomKeywords[rnd.nextInt(randomKeywords.length)];
 
@@ -75,47 +94,20 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
   }
 
   void _initHandlers() {
-    _handleQuery = pipe(_requestBuilderUseCase)
-        .transform(
-          (out) => out
-              .followedBy(LoggerUseCase((it) => 'will fetch $it'))
-              .followedBy(_callEndpointUseCase)
-              .maybeResolveEarly(
-                  condition: (data) => !data.isComplete,
-                  stateBuilder: (data) => const DiscoveryApiState.loading())
-              .followedBy(
-                LoggerUseCase(
-                  (it) => 'did fetch ${it.results.length} results',
-                  when: (it) => it.isComplete,
-                ),
-              ),
-        )
-        .fold(
-          onSuccess: (it) => _extractFakeKeywordAndEmit(it.results),
-          onFailure: HandleFailure(
-              (e, s) => DiscoveryApiState.error(error: e, stackTrace: s),
-              matchers: {
-                On<CallEndpointError>(
-                  (e, s) => DiscoveryApiState.error(error: e, stackTrace: s),
-                ),
-              }),
-          guard: (nextState) {
-            // allow going from loading state to filled state
-            if (state.isLoading && nextState.isComplete) return true;
-
-            // allow going from loading state to error state
-            if (state.isLoading && nextState.hasError) return true;
-
-            // allow going from error state to loading state
-            if (state.hasError && nextState.isLoading) return true;
-
-            // allow going from loaded state to loading state
-            if (state.isComplete && nextState.isLoading) return true;
-
-            // disallow any other changes
-            return false;
-          },
-        );
+    _handleQuery = pipe(_requestBuilderUseCase).transform(
+      (out) => out
+          .followedBy(LoggerUseCase((it) => 'will fetch $it'))
+          .followedBy(_callEndpointUseCase)
+          .scheduleComputeState(
+              condition: (data) => !data.isComplete,
+              whenTrue: (data) => const DiscoveryApiState.loading())
+          .followedBy(
+            LoggerUseCase(
+              (it) => 'did fetch ${it.results.length} results',
+              when: (it) => it.isComplete,
+            ),
+          ),
+    );
   }
 
   void _handleClientEvent(ClientEvent event) {

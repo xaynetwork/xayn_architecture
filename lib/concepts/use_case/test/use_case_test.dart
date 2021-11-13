@@ -110,7 +110,7 @@ class _UseCaseSuccess<Out> extends test.Matcher {
   const _UseCaseSuccess(this._expected);
 
   @override
-  bool matches(item, Map matchState) {
+  bool matches(dynamic item, Map matchState) {
     if (item is UseCaseResult<Out>) {
       return _expected == item.data;
     }
@@ -129,12 +129,13 @@ class _UseCaseFailure extends test.Matcher {
   const _UseCaseFailure(this._exception);
 
   @override
-  bool matches(item, Map matchState) {
+  bool matches(dynamic item, Map matchState) {
     if (item is UseCaseResult) {
       final exception = item.exception;
 
       if (exception != null) {
-        return _exception.matches(() => throw exception.error, {});
+        return _exception
+            .matches(() => throw exception.error, <dynamic, dynamic>{});
       }
     }
 

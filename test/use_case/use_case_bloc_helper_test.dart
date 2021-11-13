@@ -157,38 +157,41 @@ void main() {
 
 class TestCubit<T, In, Out, OutNext> extends Cubit<T>
     with UseCaseBlocHelper<T> {
-  late final Handler<In> _handler;
+  final HandleValue<OutNext> _handleValue;
+
+  late final UseCaseValueStream _handler;
 
   TestCubit.consume({
     required T initialState,
     required UseCase<In, Out> useCase,
-    required UseCaseResultToStateHandler<T, OutNext> onSuccess,
+    required HandleValue<OutNext> onSuccess,
     required UseCaseResultErrorHandler<T> onFailure,
     required In initialData,
     Transformer<Out, OutNext>? transformer,
-    Guard<T>? guard,
-  }) : super(initialState) {
+  }) : _handleValue = onSuccess, super(initialState) {
     final t = transformer ?? (Stream<Out> out) => out as Stream<OutNext>;
 
     consume(useCase, initialData: initialData)
-        .transform(t)
-        .fold(onSuccess: onSuccess, onFailure: onFailure, guard: guard);
+        .transform(t);
   }
 
   TestCubit.pipe({
     required T initialState,
     required UseCase<In, Out> useCase,
-    required UseCaseResultToStateHandler<T, OutNext> onSuccess,
+    required HandleValue<OutNext> onSuccess,
     required UseCaseResultErrorHandler<T> onFailure,
     Transformer<Out, OutNext>? transformer,
-    Guard<T>? guard,
-  }) : super(initialState) {
+  }) : _handleValue = onSuccess, super(initialState) {
     final t = transformer ?? (Stream<Out> out) => out as Stream<OutNext>;
 
     _handler = pipe(useCase)
-        .transform(t)
-        .fold(onSuccess: onSuccess, onFailure: onFailure, guard: guard);
+        .transform(t);
   }
 
-  void onHandler(In param) => _handler(param);
+  void onHandler(In param) => (_handler as UseCaseSink<In, OutNext>)(param);
+
+  @override
+  T computeState() {
+    _handler.fold(defaultOnError: defaultOnError, onValue: (it) => _handleValue(it),);
+  }
 }
