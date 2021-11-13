@@ -34,16 +34,18 @@ class BingCallEndpointUseCase<T> extends CallEndpointUseCase {
   }
 
   List<Document> _deserialize(Map<String, dynamic> data) {
-    final news = (data['news'] ?? {'value': const []})['value'] as List;
+    const emptyNewsMap = <String, dynamic>{'value': []};
+    final newsMap = data['news'] as Map<String, dynamic>?;
+    final news = (newsMap ?? emptyNewsMap)['value'] as List;
 
     return news.cast<Map>().map((it) {
       String? imageUrl;
 
       if (it.containsKey('image')) {
-        final image = it['image'] as Map;
+        final image = it['image'] as Map<String, dynamic>;
 
         if (image.containsKey('contentUrl')) {
-          imageUrl = image['contentUrl'];
+          imageUrl = image['contentUrl'] as String;
         }
       }
 
@@ -53,9 +55,9 @@ class BingCallEndpointUseCase<T> extends CallEndpointUseCase {
           displayUrl: imageUrl != null
               ? Uri.parse(imageUrl)
               : Uri.parse('https://www.xayn.com'),
-          url: Uri.parse(it['url'] ?? ''),
-          snippet: it['description'] ?? '',
-          title: it['name'] ?? '',
+          url: Uri.parse(it['url'] as String? ?? ''),
+          snippet: it['description'] as String? ?? '',
+          title: it['name'] as String? ?? '',
         ),
         nonPersonalizedRank: 0,
         personalizedRank: 0,
