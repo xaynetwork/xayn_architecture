@@ -50,6 +50,8 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
 
   late String nextFakeKeyword;
 
+  bool _isLoading = false;
+
   Sink<ClientEvent> get onClientEvent => _onClientEvent.sink;
 
   DiscoveryApi(
@@ -70,6 +72,8 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
 
   @override
   Future<DiscoveryApiState> computeState() async {
+    if (_isLoading) return const DiscoveryApiState.loading();
+
     var nextState = state;
 
     _handleQuery.fold(
@@ -99,8 +103,8 @@ class DiscoveryApi extends Cubit<DiscoveryApiState>
           .followedBy(LoggerUseCase((it) => 'will fetch $it'))
           .followedBy(_callEndpointUseCase)
           .scheduleComputeState(
-              condition: (data) => !data.isComplete,
-              whenTrue: (data) => const DiscoveryApiState.loading())
+              consumeEvent: (data) => !data.isComplete,
+              run: (data) => _isLoading = !data.isComplete)
           .followedBy(
             LoggerUseCase(
               (it) => 'did fetch ${it.results.length} results',

@@ -60,8 +60,8 @@ class ResultCardManager extends Cubit<ResultCardState>
     _updateUri = pipe(_htmlFetcherUseCase).transform(
       (out) => out
           .scheduleComputeState(
-            condition: (it) => !it.isCompleted,
-            whenTrue: (it) => state.copyWith(isComplete: false),
+            consumeEvent: (it) => !it.isCompleted,
+            run: (it) => state.copyWith(isComplete: false),
           )
           .map(_createReadabilityConfig)
           .followedBy(_makeReadableUseCase)

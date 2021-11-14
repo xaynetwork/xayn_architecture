@@ -115,13 +115,11 @@ extension UseCaseExtension<In> on Stream<In> {
       .transform(UseCaseStreamTransformer<In, Out>(useCase.transaction));
 
   Stream<In> scheduleComputeState({
-    required Test<In> condition,
-    required Runner<In> whenTrue,
-    bool swallowEvent = true,
+    required Test<In> consumeEvent,
+    required Runner<In> run,
   }) =>
       transform(EmitOnTransformer<In>(
-        test: condition,
-        whenTrue: whenTrue,
-        swallowEvent: swallowEvent,
+        consumeEvent: consumeEvent,
+        run: run,
       ));
 }
