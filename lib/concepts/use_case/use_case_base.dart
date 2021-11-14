@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:rxdart/transformers.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:xayn_architecture/concepts/use_case/emit_on_transformer.dart';
-import 'package:xayn_architecture/concepts/use_case/use_case_transformer.dart';
+import 'package:xayn_architecture/concepts/use_case/transformers/emit_on_transformer.dart';
+import 'package:xayn_architecture/concepts/use_case/transformers/use_case_transformer.dart';
 
 /// {@template use_case}
 /// ```dart

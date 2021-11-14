@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:test/test.dart' as test;
-import 'package:xayn_architecture/concepts/use_case.dart';
+import 'package:xayn_architecture/xayn_architecture.dart';
 
 /// Creates a new `useCase`-specific test case with the given [description].
 /// [useCaseTest] will handle asserting that the `useCase` emits the [expect]ed

@@ -8,7 +8,6 @@ import 'package:xayn_discovery_engine/src/api/events/base_events.dart';
 import 'package:xayn_discovery_engine/src/api/events/search_events.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import 'package:xayn_architecture/concepts/use_case.dart';
 import 'package:xayn_architecture/xayn_architecture.dart';
 import 'package:xayn_architecture_example/domain/entities/document.dart';
 import 'package:xayn_architecture_example/domain/use_cases/news_feed/bing_call_endpoint_use_case.dart';

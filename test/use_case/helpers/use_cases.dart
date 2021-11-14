@@ -1,4 +1,4 @@
-import 'package:xayn_architecture/concepts/use_case.dart';
+import 'package:xayn_architecture/xayn_architecture.dart';
 
 class IntToDoubleUseCase extends UseCase<int, double> {
   @override

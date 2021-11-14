@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:palette_generator/palette_generator.dart';
-import 'package:xayn_architecture/concepts/use_case.dart';
+import 'package:xayn_architecture/xayn_architecture.dart';
 import 'package:xayn_architecture_example/domain/states/result_card_state.dart';
 import 'package:xayn_architecture_example/domain/use_cases/cards/palette_use_case.dart';
 import 'package:xayn_architecture_example/domain/use_cases/readability/html_fetcher_use_case.dart';

@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:xayn_architecture/concepts/on_failure.dart';
-import 'package:xayn_architecture/concepts/use_case/emit_on_transformer.dart';
+import 'package:xayn_architecture/concepts/use_case/handlers/on_failure.dart';
+import 'package:xayn_architecture/concepts/use_case/transformers/emit_on_transformer.dart';
 
 typedef Transformer<In, Out> = Stream<Out> Function(Stream<In> out);
 typedef HandleValue<Right> = void Function(Right value);

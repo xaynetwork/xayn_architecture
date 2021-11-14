@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import 'package:xayn_architecture/concepts/use_case.dart';
+import 'package:xayn_architecture/xayn_architecture.dart';
 import 'package:xayn_architecture_example/domain/use_cases/storage/hydrated_storage_init_use_case.dart';
 
 @injectable
