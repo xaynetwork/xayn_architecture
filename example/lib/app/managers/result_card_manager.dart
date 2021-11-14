@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:palette_generator/palette_generator.dart';
-import 'package:xayn_architecture/concepts/on_failure.dart';
 import 'package:xayn_architecture/concepts/use_case.dart';
 import 'package:xayn_architecture_example/domain/states/result_card_state.dart';
 import 'package:xayn_architecture_example/domain/use_cases/cards/palette_use_case.dart';
@@ -39,27 +37,24 @@ class ResultCardManager extends Cubit<ResultCardState>
   void updateImageUri(Uri uri) => _updateImageUri(uri);
 
   @override
-  Future<ResultCardState?> computeState() async {
-    var nextState = state;
+  Future<ResultCardState?> computeState() async =>
+      fold2(_updateUri, _updateImageUri).foldAll((a, b, errorReport) {
+        if (errorReport.isNotEmpty) {
+          return ResultCardState.error();
+        }
 
-    _updateUri.fold(
-        defaultOnError: (e, s) => nextState = ResultCardState.error(),
-        matchOnError: {
-          On<TimeoutException>((e, st) => ResultCardState.error()),
-          On<FormatException>((e, st) => ResultCardState.error()),
-        },
-        onValue: (it) => nextState = nextState.copyWith(
-              result: it.processHtmlResult,
-              paragraphs: it.paragraphs,
-              images: it.images,
-            ));
+        var nextState = state.copyWith(paletteGenerator: b);
 
-    _updateImageUri.fold(
-        defaultOnError: (e, s) => nextState = ResultCardState.error(),
-        onValue: (it) => nextState = nextState.copyWith(paletteGenerator: it));
+        if (a != null) {
+          nextState.copyWith(
+            result: a.processHtmlResult,
+            paragraphs: a.paragraphs,
+            images: a.images,
+          );
+        }
 
-    return nextState;
-  }
+        return nextState;
+      });
 
   Future<void> init() async {
     _updateUri = pipe(_htmlFetcherUseCase).transform(

@@ -1,5 +1,5 @@
-typedef OnFailureDefault = void Function(dynamic e, StackTrace? s);
-typedef HandleOnFailure<Failure> = void Function(dynamic e, StackTrace? s);
+typedef OnFailureDefault = void Function(Object e, StackTrace? s);
+typedef HandleOnFailure<Failure> = void Function(Object e, StackTrace? s);
 
 class HandleFailure {
   final OnFailureDefault onDefault;
@@ -10,10 +10,10 @@ class HandleFailure {
     this.matchers,
   });
 
-  void call(dynamic e, StackTrace? s) {
+  void call(Object e, StackTrace? s) {
     final handlers = matchers ?? const {};
     final defaultHandler =
-        On<dynamic>((dynamic e, StackTrace? s) => onDefault(e, s));
+        On<dynamic>((Object e, StackTrace? s) => onDefault(e, s));
     final handler =
         handlers.firstWhere((it) => it._test(e), orElse: () => defaultHandler);
 
