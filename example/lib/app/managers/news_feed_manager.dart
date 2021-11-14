@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:xayn_architecture/xayn_architecture.dart';
@@ -6,7 +8,7 @@ import 'package:xayn_architecture_example/domain/use_cases/discovery_engine/dico
 import 'package:xayn_architecture_example/domain/use_cases/discovery_engine/result_combiner_use_case.dart';
 
 @injectable
-class NewsFeedManager extends HydratedCubit<ScreenState>
+class NewsFeedManager extends Cubit<ScreenState>
     with UseCaseBlocHelper<ScreenState> {
   NewsFeedManager(
     this._discoveryResultsUseCase,
@@ -15,42 +17,44 @@ class NewsFeedManager extends HydratedCubit<ScreenState>
   }
 
   final DiscoveryResultsUseCase _discoveryResultsUseCase;
+  late final UseCaseValueStream<ResultCombinerJob> _discoveryResults;
 
   void handleResultIndex(int index) => emit(state.copyWith(
         resultIndex: index,
       ));
 
-  void _initHandlers() {
-    consume(_discoveryResultsUseCase, initialData: 3)
-        .transform(
-            (out) => out.followedBy(ResultCombinerUseCase(() => state.results)))
-        .fold(
-          onSuccess: (it) => state.copyWith(
-            results: it.documents,
-            resultIndex:
-                (state.resultIndex - it.removed).clamp(0, it.documents.length),
-            isComplete: it.apiState.isComplete,
-            isInErrorState: false,
-          ), // todo: instead of null, a loading state
-          onFailure: HandleFailure((e, s) {
-            //print('$e $s');
-            return state.copyWith(
-              isInErrorState: true,
-            );
-          }),
+  @override
+  Future<ScreenState> computeState() async {
+    var nextState = state;
+
+    _discoveryResults.fold(
+      defaultOnError: (e, s) {
+        nextState = nextState.copyWith(
+          isInErrorState: true,
         );
+      },
+      onValue: (it) {
+        nextState = nextState.copyWith(
+          results: it.documents,
+          resultIndex: (nextState.resultIndex - it.removed)
+              .clamp(0, it.documents.length),
+          isComplete: it.apiState.isComplete,
+          isInErrorState: false,
+        );
+      },
+      matchOnError: {
+        On<TimeoutException>((e, s) => nextState = nextState.copyWith(
+              isInErrorState: true,
+            ))
+      },
+    );
+
+    return nextState;
   }
 
-  /// we get this for free, thanks to
-  /// - freezed
-  /// - json_serializable
-  @override
-  ScreenState? fromJson(Map<String, dynamic> json) =>
-      ScreenState.fromJson(json);
-
-  /// we get this for free, thanks to
-  /// - freezed
-  /// - json_serializable
-  @override
-  Map<String, dynamic>? toJson(ScreenState state) => state.toJson();
+  void _initHandlers() {
+    _discoveryResults = consume(_discoveryResultsUseCase, initialData: 3)
+        .transform((out) =>
+            out.followedBy(ResultCombinerUseCase(() => state.results)));
+  }
 }

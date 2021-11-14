@@ -3,14 +3,10 @@ library use_case_bloc_helper;
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:rxdart/transformers.dart';
-import 'package:xayn_architecture/concepts/on_failure.dart';
-import 'package:xayn_architecture/concepts/use_case.dart';
-import 'package:xayn_architecture/concepts/use_case/emit_on_transformer.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:xayn_architecture/xayn_architecture.dart';
+import 'package:xayn_architecture/concepts/use_case/use_case_stream.dart';
 import 'package:xayn_architecture/concepts/use_case/use_case_base.dart';
-
-part 'use_case_resolver.dart';
-part 'use_case_subject.dart';
 
 /// A method signature, defines a Function with exactly one parameter.
 /// Used in or `cubit`s to define handlers that are exposed to widgets.
@@ -19,14 +15,26 @@ typedef Handler<Next> = void Function(Next data);
 /// A mixin which exposes [UseCase] helper methods for binding changes to the [BlocBase.state]
 mixin UseCaseBlocHelper<State> on BlocBase<State> {
   final List<StreamController> _subjects = <StreamController>[];
-  final List<StreamSubscription<State?>> _subscriptions =
-      <StreamSubscription<State?>>[];
+  final CompositeSubscription _subscriptions = CompositeSubscription();
+  var _didInitHandlers = false;
+
+  @override
+  Stream<State> get stream {
+    if (!_didInitHandlers) {
+      _didInitHandlers = true;
+
+      computeState();
+    }
+
+    return super.stream;
+  }
+
+  FutureOr<State?> computeState() {}
 
   @override
   Future<void> close() {
-    for (var it in _subscriptions) {
-      it.cancel();
-    }
+    _subscriptions.dispose();
+
     for (var subject in _subjects) {
       subject.close();
     }
@@ -37,13 +45,6 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
     return super.close();
   }
 
-  State? computeState(
-    State currentState,
-    State? nextState,
-    UseCase useCase,
-  ) =>
-      nextState;
-
   /// Consumes the [useCase] as a `Stream` and wraps the `Sink.add` handler,
   /// which can then be resolved to a `Cubit`'s state.
   ///
@@ -52,25 +53,22 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   ///
   /// When using [UseCaseSinkResolver.close], then be aware that any future
   /// incoming events will throw a [StateError] on that same `sink`.
-  _SinkResolver<In, Out, State> pipe<In, Out>(
+  UseCaseSink<In, Out> pipe<In, Out>(
     UseCase<In, Out> useCase,
   ) {
-    final controller = StreamController<In>.broadcast();
-    final stream = controller.stream.followedBy(useCase);
+    final controller = StreamController<In>();
 
     _subjects.add(controller);
 
-    return _SinkResolver(
-      stream,
-      (State? nextState) {
-        final computedState = computeState(state, nextState, useCase);
+    return UseCaseSink(
+      controller.sink,
+      controller.stream.followedBy(useCase),
+      () async {
+        final nextState = await computeState();
 
-        if (computedState != null) {
-          emit(computedState);
-        }
+        if (nextState != null) emit(nextState);
       },
       _subscriptions,
-      controller.sink,
     );
   }
 
@@ -78,18 +76,16 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   /// The connection stays open, until `close` is called on the `Cubit`.
   ///
   /// Should you wish to prematurely close it, then use [UseCaseSubscription.cancel].
-  UseCaseResolver<In, Out, State> consume<In, Out>(
+  UseCaseValueStream<Out> consume<In, Out>(
     UseCase<In, Out> useCase, {
     required In initialData,
   }) =>
-      _Resolver(
-        Stream.value(initialData).followedBy(useCase),
-        (State? nextState) {
-          final computedState = computeState(state, nextState, useCase);
+      UseCaseValueStream(
+        Stream<In>.value(initialData).followedBy(useCase),
+        () async {
+          final nextState = await computeState();
 
-          if (computedState != null) {
-            emit(computedState);
-          }
+          if (nextState != null) emit(nextState);
         },
         _subscriptions,
       );

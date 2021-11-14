@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:xayn_architecture/concepts/use_case_test.dart';
+import 'package:xayn_architecture/xayn_architecture_test.dart';
 
 import 'helpers/use_cases.dart';
 

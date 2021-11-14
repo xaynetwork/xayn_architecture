@@ -6,7 +6,7 @@
 
 import 'package:get_it/get_it.dart' as _i1;
 import 'package:injectable/injectable.dart' as _i2;
-import 'package:xayn_architecture/concepts/use_case.dart' as _i10;
+import 'package:xayn_architecture/xayn_architecture.dart' as _i10;
 
 import 'app/managers/news_feed_manager.dart' as _i15;
 import 'app/managers/result_card_manager.dart' as _i8;

@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import 'package:xayn_architecture/concepts/on_failure.dart';
-import 'package:xayn_architecture/concepts/use_case.dart';
+import 'package:palette_generator/palette_generator.dart';
+import 'package:xayn_architecture/xayn_architecture.dart';
 import 'package:xayn_architecture_example/domain/states/result_card_state.dart';
 import 'package:xayn_architecture_example/domain/use_cases/cards/palette_use_case.dart';
 import 'package:xayn_architecture_example/domain/use_cases/readability/html_fetcher_use_case.dart';
@@ -21,8 +20,8 @@ class ResultCardManager extends Cubit<ResultCardState>
   final ProcessHtmlUseCase _processHtmlUseCase;
   final PaletteUseCase _paletteUseCase;
 
-  late final UriHandler _updateUri;
-  late final UriHandler _updateImageUri;
+  late final UseCaseSink<Uri, WebsiteParagraphs> _updateUri;
+  late final UseCaseSink<Uri, PaletteGenerator> _updateImageUri;
 
   ResultCardManager(
     this._htmlFetcherUseCase,
@@ -37,42 +36,39 @@ class ResultCardManager extends Cubit<ResultCardState>
 
   void updateImageUri(Uri uri) => _updateImageUri(uri);
 
-  Future<void> init() async {
-    _updateUri = pipe(_htmlFetcherUseCase)
-        .transform(
-          (out) => out
-              .maybeResolveEarly(
-                condition: (it) => !it.isCompleted,
-                stateBuilder: (it) => state.copyWith(isComplete: false),
-              )
-              .map(_createReadabilityConfig)
-              .followedBy(_makeReadableUseCase)
-              .followedBy(_processHtmlUseCase),
-        )
-        .fold(
-          onSuccess: (it) => state.copyWith(
-            result: it.processHtmlResult,
-            paragraphs: it.paragraphs,
-            images: it.images,
-          ),
-          onFailure: HandleFailure((e, st) {
-            log('e: $e, st: $st');
-            return ResultCardState.error();
-          }, matchers: {
-            On<TimeoutException>((e, st) => ResultCardState.error()),
-            On<FormatException>((e, st) => ResultCardState.error()),
-          }),
-        );
-
-    _updateImageUri = pipe(_paletteUseCase).fold(
-      onSuccess: (it) => state.copyWith(paletteGenerator: it),
-      onFailure: HandleFailure(
-        (e, st) {
-          log('e: $e, st: $st');
+  @override
+  Future<ResultCardState?> computeState() async =>
+      fold2(_updateUri, _updateImageUri).foldAll((a, b, errorReport) {
+        if (errorReport.isNotEmpty) {
           return ResultCardState.error();
-        },
-      ),
+        }
+
+        var nextState = state.copyWith(paletteGenerator: b);
+
+        if (a != null) {
+          nextState.copyWith(
+            result: a.processHtmlResult,
+            paragraphs: a.paragraphs,
+            images: a.images,
+          );
+        }
+
+        return nextState;
+      });
+
+  Future<void> init() async {
+    _updateUri = pipe(_htmlFetcherUseCase).transform(
+      (out) => out
+          .scheduleComputeState(
+            consumeEvent: (it) => !it.isCompleted,
+            run: (it) => state.copyWith(isComplete: false),
+          )
+          .map(_createReadabilityConfig)
+          .followedBy(_makeReadableUseCase)
+          .followedBy(_processHtmlUseCase),
     );
+
+    _updateImageUri = pipe(_paletteUseCase);
   }
 
   MakeReadableConfig _createReadabilityConfig(HtmlFetcherProgress progress) =>
