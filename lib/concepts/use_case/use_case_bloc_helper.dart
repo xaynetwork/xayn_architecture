@@ -29,6 +29,38 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
     return super.stream;
   }
 
+  /// Called whenever [pipe] or [consume] emits an event.
+  ///
+  /// Use this handler to combine all active [Either] constructs at once,
+  /// in a synchronous way.
+  ///
+  /// See [fold] to combine multiple instances, or simply process each `Either`
+  /// individually.
+  ///
+  /// @override
+  ///   Future<ResultCardState?> computeState() async =>
+  ///     fold2(_a, _b).foldAll((a, b, errorReport) {
+  ///       if (errorReport.isNotEmpty) {
+  ///         if (errorReport.exists(_a) {
+  ///           return State.error(errorReport.of(_a));
+  ///         }
+  ///
+  ///         if (errorReport.exists(_b) {
+  ///           return State.error(errorReport.of(_b));
+  ///         }
+  ///       }
+  ///
+  ///       if (a != null && b != null) {
+  ///         return State(
+  ///           foo: a.foo,
+  ///           bar: a.bar,
+  ///         );
+  ///       }
+  ///
+  ///       // If a or b are null, return null,
+  ///       // and no next state will be emitted
+  ///       return null;
+  ///     });
   FutureOr<State?> computeState() {}
 
   @override

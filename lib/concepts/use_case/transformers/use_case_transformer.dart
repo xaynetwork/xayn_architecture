@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 // ignore: implementation_imports
 import 'package:rxdart/src/utils/forwarding_sink.dart';
 // ignore: implementation_imports
@@ -9,9 +10,11 @@ typedef _Transaction<In, Out> = Stream<Out> Function(In);
 
 /// A `Stream` transformer that binds the events of a parent `Stream`, as
 /// the next input of a `useCase`.
+@protected
 class UseCaseStreamTransformer<In, Out> extends StreamTransformerBase<In, Out> {
   final _Transaction<In, Out> _transaction;
 
+  /// Creates a new UseCaseStreamTransformer.
   UseCaseStreamTransformer(this._transaction);
 
   @override

@@ -5,17 +5,26 @@ import 'package:rxdart/rxdart.dart';
 import 'package:xayn_architecture/concepts/use_case/handlers/on_failure.dart';
 import 'package:xayn_architecture/concepts/use_case/transformers/emit_on_transformer.dart';
 
+/// Signature for transforming an input `Stream` to an output `Stream`.
 typedef Transformer<In, Out> = Stream<Out> Function(Stream<In> out);
+
+/// Signature for handling an output event of a `Stream` created from a `UseCase`.
 typedef HandleValue<Right> = void Function(Right value);
 
+/// An `Object` which can hold either a value or an error.
 abstract class Either<Value> {
+  /// Resolves the current value or error and then calls the associated handler,
+  /// - [onValue] when the value is set
+  /// - [defaultOnError] or, if a specific error `Type` can be matched, the handler
+  ///   from [matchOnError] when an error is set.
   void fold({
-    required OnFailureDefault defaultOnError,
+    required HandleOnFailure defaultOnError,
     required HandleValue<Value> onValue,
     Set<On>? matchOnError,
   });
 }
 
+/// Represents a `Stream` that was created from a `UseCase` via the `consume` handler.
 class UseCaseValueStream<Out> implements Either<Out> {
   final Stream<Out> _stream;
   final VoidCallback _onData;
@@ -25,6 +34,7 @@ class UseCaseValueStream<Out> implements Either<Out> {
   Object? _error;
   StackTrace? _stackTrace;
 
+  /// Creates a new `UseCase` value `Stream`.
   UseCaseValueStream(
     this._stream,
     this._onData,
@@ -52,7 +62,7 @@ class UseCaseValueStream<Out> implements Either<Out> {
 
   @override
   void fold({
-    required OnFailureDefault defaultOnError,
+    required HandleOnFailure defaultOnError,
     required HandleValue<Out> onValue,
     Set<On>? matchOnError,
   }) {
@@ -68,6 +78,8 @@ class UseCaseValueStream<Out> implements Either<Out> {
     }
   }
 
+  /// If the output from the consumed `UseCase` requires further transformations,
+  /// then use this handler.
   UseCaseValueStream<OutNext> transform<OutNext>(
           Transformer<Out, OutNext> transform) =>
       UseCaseValueStream(
@@ -77,9 +89,11 @@ class UseCaseValueStream<Out> implements Either<Out> {
       );
 }
 
+/// Represents a `Sink` and `Stream` that was created from a `UseCase` via the `pipe` handler.
 class UseCaseSink<In, Out> extends UseCaseValueStream<Out> {
   final Sink<In> _sink;
 
+  /// Creates a new `UseCase` value `Sink`.
   UseCaseSink(
     this._sink,
     Stream<Out> stream,
@@ -91,6 +105,8 @@ class UseCaseSink<In, Out> extends UseCaseValueStream<Out> {
           subscriptions,
         );
 
+  /// Adds a new [param] to the `Sink`.
+  /// This `param` will be scheduled to invoke the wrapped `UseCase` with.
   @nonVirtual
   void call(In param) => _sink.add(param);
 

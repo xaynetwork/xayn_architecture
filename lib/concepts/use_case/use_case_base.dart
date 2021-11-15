@@ -69,10 +69,12 @@ class UseCaseResult<Out> {
   /// returns true when the call threw an error.
   bool get hasError => exception != null;
 
+  /// Constructor for successful output.
   const UseCaseResult.success(this.data)
       : exception = null,
         assert(data != null);
 
+  /// Constructor for failed output.
   const UseCaseResult.failure(this.exception)
       : data = null,
         assert(exception != null);
@@ -110,10 +112,15 @@ class UseCaseException {
 ///   );
 /// ```
 extension UseCaseExtension<In> on Stream<In> {
+  /// Used followedBy to chain multiple use cases.
+  /// The output of the current use case will be the input for [useCase].
   Stream<Out> followedBy<Out>(UseCase<In, Out> useCase) => useCase
       .transform(this)
       .transform(UseCaseStreamTransformer<In, Out>(useCase.transaction));
 
+  /// A hook to allow an intermediate call to `computeState`.
+  /// - [consumeEvent] can return `true` to stop the last event from propagating further.
+  /// - [run] is a handler which runs just before `computeState` does.
   Stream<In> scheduleComputeState({
     required Test<In> consumeEvent,
     required Runner<In> run,

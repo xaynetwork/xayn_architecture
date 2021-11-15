@@ -1,18 +1,23 @@
 import 'package:rxdart/rxdart.dart' show ErrorAndStackTrace;
 import 'package:xayn_architecture/xayn_architecture.dart';
 
+/// Exposes `foldX`, which can be used to combine [Either] instances
+/// from within `computeState`.
 extension FoldExtension<State> on UseCaseBlocHelper<State> {
+  /// Resolves the value or error found in [streamA] to an output of [T].
   _Fold1<A, T> fold<A, T>(
     Either<A> streamA,
   ) =>
       _Fold1(streamA);
 
+  /// Resolves the values or errors found in [streamA], [streamB] to an output of [T].
   _Fold2<A, B, T> fold2<A, B, T>(
     Either<A> streamA,
     Either<B> streamB,
   ) =>
       _Fold2(streamA, streamB);
 
+  /// Resolves the values or errors found in [streamA], [streamB], [streamC] to an output of [T].
   _Fold3<A, B, C, T> fold3<A, B, C, T>(
     Either<A> streamA,
     Either<B> streamB,
@@ -20,6 +25,8 @@ extension FoldExtension<State> on UseCaseBlocHelper<State> {
   ) =>
       _Fold3(streamA, streamB, streamC);
 
+  /// Resolves the values or errors found in [streamA], [streamB],
+  /// [streamC], [streamD] to an output of [T].
   _Fold4<A, B, C, D, T> fold4<A, B, C, D, T>(
     Either<A> streamA,
     Either<B> streamB,
@@ -28,6 +35,8 @@ extension FoldExtension<State> on UseCaseBlocHelper<State> {
   ) =>
       _Fold4(streamA, streamB, streamC, streamD);
 
+  /// Resolves the values or errors found in [streamA], [streamB],
+  /// [streamC], [streamD], [streamE] to an output of [T].
   _Fold5<A, B, C, D, E, T> fold5<A, B, C, D, E, T>(
     Either<A> streamA,
     Either<B> streamB,
@@ -37,6 +46,8 @@ extension FoldExtension<State> on UseCaseBlocHelper<State> {
   ) =>
       _Fold5(streamA, streamB, streamC, streamD, streamE);
 
+  /// Resolves the values or errors found in [streamA], [streamB],
+  /// [streamC], [streamD], [streamE], [streamF] to an output of [T].
   _Fold6<A, B, C, D, E, F, T> fold6<A, B, C, D, E, F, T>(
     Either<A> streamA,
     Either<B> streamB,
@@ -47,6 +58,8 @@ extension FoldExtension<State> on UseCaseBlocHelper<State> {
   ) =>
       _Fold6(streamA, streamB, streamC, streamD, streamE, streamF);
 
+  /// Resolves the values or errors found in [streamA], [streamB],
+  /// [streamC], [streamD], [streamE], [streamF], [streamG] to an output of [T].
   _Fold7<A, B, C, D, E, F, G, T> fold7<A, B, C, D, E, F, G, T>(
     Either<A> streamA,
     Either<B> streamB,
@@ -58,6 +71,9 @@ extension FoldExtension<State> on UseCaseBlocHelper<State> {
   ) =>
       _Fold7(streamA, streamB, streamC, streamD, streamE, streamF, streamG);
 
+  /// Resolves the values or errors found in [streamA], [streamB],
+  /// [streamC], [streamD], [streamE], [streamF],
+  /// [streamG], [streamH] to an output of [T].
   _Fold8<A, B, C, D, E, F, G, H, T> fold8<A, B, C, D, E, F, G, H, T>(
     Either<A> streamA,
     Either<B> streamB,
@@ -71,6 +87,9 @@ extension FoldExtension<State> on UseCaseBlocHelper<State> {
       _Fold8(streamA, streamB, streamC, streamD, streamE, streamF, streamG,
           streamH);
 
+  /// Resolves the values or errors found in [streamA], [streamB],
+  /// [streamC], [streamD], [streamE], [streamF],
+  /// [streamG], [streamH], [streamI] to an output of [T].
   _Fold9<A, B, C, D, E, F, G, H, I, T> fold9<A, B, C, D, E, F, G, H, I, T>(
     Either<A> streamA,
     Either<B> streamB,
@@ -691,16 +710,26 @@ class _Fold9<A, B, C, D, E, F, G, H, I, T> {
   }
 }
 
+/// An Object which facilitates working with errors that may come from
+/// multiple `UseCase`s.
 class ErrorReport {
-  final bool isEmpty, isNotEmpty;
+  /// Returns `true` when no errors were added.
+  final bool isEmpty;
+
+  /// Returns `true` when errors were added.
+  final bool isNotEmpty;
 
   final Map<Either, ErrorAndStackTrace> _errors;
 
+  /// Constructs a new error report.
   ErrorReport(this._errors)
       : isEmpty = _errors.isEmpty,
         isNotEmpty = _errors.isNotEmpty;
 
+  /// Returns `true` when an error was reported for [either].
   bool exists(Either either) => _errors.containsKey(either);
 
+  /// Returns `ErrorAndStackTrace` for [either].
+  /// Returns `null` if no error was added for [either].
   ErrorAndStackTrace? of(Either either) => _errors[either];
 }
