@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:rxdart/transformers.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:xayn_architecture/concepts/use_case/handlers/on_failure.dart';
 import 'package:xayn_architecture/concepts/use_case/transformers/emit_on_transformer.dart';
 import 'package:xayn_architecture/concepts/use_case/transformers/use_case_transformer.dart';
+import 'package:xayn_architecture/concepts/use_case/use_case_stream.dart';
 
 /// {@template use_case}
 /// ```dart
@@ -34,8 +36,8 @@ abstract class UseCase<In, Out> {
   @nonVirtual
   Future<List<UseCaseResult<Out>>> call(In param) => transaction(param)
       .map((result) => UseCaseResult.success(result))
-      .onErrorReturnWith((e, s) => UseCaseResult<Out>.failure(
-          UseCaseException(error: e, stackTrace: StackTrace.current)))
+      .onErrorReturnWith(
+          (e, s) => UseCaseResult<Out>.failure(e, StackTrace.current))
       .toList();
 
   /// If you want to apply any transformations on incoming params in [transaction],
@@ -56,43 +58,40 @@ abstract class UseCase<In, Out> {
 }
 
 /// The return value for a [UseCase], either [data] or [exception] will be filled.
-class UseCaseResult<Out> {
-  /// If successful, then data will be filled
-  final Out? data;
-
-  /// If unsuccessful, then exception will be filled
-  final UseCaseException? exception;
-
-  /// returns true when the call succeeded.
-  bool get hasData => data != null;
-
-  /// returns true when the call threw an error.
-  bool get hasError => exception != null;
+class UseCaseResult<Out> implements Either<Out> {
+  final Out? _value;
+  final Object? _error;
+  final StackTrace? _stackTrace;
 
   /// Constructor for successful output.
-  const UseCaseResult.success(this.data)
-      : exception = null,
-        assert(data != null);
+  const UseCaseResult.success(this._value)
+      : _error = null,
+        _stackTrace = null,
+        assert(_value != null);
 
   /// Constructor for failed output.
-  const UseCaseResult.failure(this.exception)
-      : data = null,
-        assert(exception != null);
-}
-
-/// A wrapper for exceptions that may be thrown during the call phase of a [UseCase].
-class UseCaseException {
-  /// A reference to the wrapped error.
-  final Object error;
-
-  /// A reference to the wrapped stack trace.
-  final StackTrace stackTrace;
-
-  /// The wrapper's constructor.
-  const UseCaseException({required this.error, required this.stackTrace});
+  const UseCaseResult.failure(
+    this._error,
+    this._stackTrace,
+  )   : _value = null,
+        assert(_error != null);
 
   @override
-  String toString() => 'UseCaseException: ${Error.safeToString(error)}';
+  void fold({
+    required HandleOnFailure defaultOnError,
+    required HandleValue<Out> onValue,
+    Set<On>? matchOnError,
+  }) {
+    final error = _error;
+    final value = _value;
+
+    if (error != null) {
+      HandleFailure(defaultOnError, matchers: matchOnError)
+          .call(error, _stackTrace);
+    } else if (value != null) {
+      onValue(value);
+    }
+  }
 }
 
 /// An extension on `Stream` which allows easily chaining multiple
