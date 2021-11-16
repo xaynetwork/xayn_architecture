@@ -63,6 +63,23 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   ///     });
   FutureOr<State?> computeState() {}
 
+  /// Schedules a compute state
+  /// if [handler] is provided, then this method will be executed
+  /// right before [computeState] triggers.
+  void scheduleComputeState(FutureOr Function()? handler) async {
+    computeStateNow() async {
+      final nextState = await computeState();
+
+      if (nextState != null) emit(nextState);
+    }
+
+    if (handler != null) {
+      await handler();
+    }
+
+    computeStateNow();
+  }
+
   @override
   Future<void> close() {
     _subscriptions.dispose();
