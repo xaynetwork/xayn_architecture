@@ -67,16 +67,14 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   /// if [handler] is provided, then this method will be executed
   /// right before [computeState] triggers.
   void scheduleComputeState(FutureOr Function()? handler) async {
-    final out = handler != null ? handler() : null;
-
     computeStateNow() async {
       final nextState = await computeState();
 
       if (nextState != null) emit(nextState);
     }
 
-    if (out is Future) {
-      await out;
+    if (handler != null) {
+      await handler();
     }
 
     computeStateNow();
