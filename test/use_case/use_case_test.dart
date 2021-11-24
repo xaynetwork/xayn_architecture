@@ -1,7 +1,7 @@
 import 'package:test/test.dart';
 import 'package:xayn_architecture/xayn_architecture_test.dart';
 
-import 'helpers/use_cases.dart';
+import '../helpers/use_cases.dart';
 
 void main() {
   group('Use case', () {

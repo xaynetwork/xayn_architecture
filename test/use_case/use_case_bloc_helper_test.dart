@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:test/test.dart';
 import 'package:xayn_architecture/xayn_architecture.dart';
 
-import 'helpers/use_cases.dart';
+import '../helpers/use_cases.dart';
 
 /// note that by default, use cases are consumed/piped in a switchMap fashion
 void main() {
