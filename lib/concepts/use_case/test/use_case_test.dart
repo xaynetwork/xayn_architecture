@@ -66,9 +66,11 @@ void useCaseTest<U extends UseCase<In, Out>, In, Out>(
   FutureOr<void> Function()? setUp,
   required U Function() build,
   required Iterable<In> input,
+  void Function()? act,
   List<test.Matcher>? expect,
   Function(U useCase)? verify,
   FutureOr<void> Function()? tearDown,
+  int? take,
 }) {
   test.test(description, () async {
     await runZonedGuarded(() async {
@@ -76,12 +78,28 @@ void useCaseTest<U extends UseCase<In, Out>, In, Out>(
 
       final useCase = build();
       final output = <UseCaseResult<Out>>[];
+      final Completer completer = Completer();
+      final count = take ?? expect?.length;
 
-      await for (var data in Stream.fromIterable(input)) {
-        final results = await useCase(data);
+      // ignore: INVALID_USE_OF_PROTECTED_MEMBER
+      var stream = Stream.fromIterable(input).asyncExpand(useCase.transaction);
 
-        output.addAll(results);
+      if (count != null) {
+        stream = stream.take(count);
       }
+
+      stream.listen(
+        (it) => output.add(UseCaseResult<Out>.success(it)),
+        onError: (e, s) => output.add(UseCaseResult<Out>.failure(e, s)),
+        onDone: completer.complete,
+        cancelOnError: false,
+      );
+
+      await Future.delayed(const Duration(milliseconds: 10));
+
+      act?.call();
+
+      await completer.future;
 
       if (expect != null) {
         test.expect(output, expect);
@@ -111,7 +129,7 @@ class _UseCaseSuccess<Out> extends test.Matcher {
 
   @override
   bool matches(dynamic item, Map matchState) {
-    if (item is UseCaseResult<Out>) {
+    if (item is UseCaseResult) {
       Out? expected;
 
       item.fold(
