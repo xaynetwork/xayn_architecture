@@ -117,17 +117,6 @@ class _$_DocumentId extends _DocumentId {
   @override
   final String key;
 
-  @override
-  bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _DocumentId &&
-            (identical(other.key, key) || other.key == key));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, key);
-
   @JsonKey(ignore: true)
   @override
   _$DocumentIdCopyWith<_DocumentId> get copyWith =>
