@@ -40,6 +40,39 @@ abstract class UseCase<In, Out> {
           (e, s) => UseCaseResult<Out>.failure(e, StackTrace.current))
       .toList();
 
+  /// Shorthand for use cases that are guaranteed to only return one [Out] from
+  /// their [In].
+  ///
+  /// If no output is yielded, or more than one output occurs, then it will
+  /// throw a `RangeError`.
+  ///
+  /// If an error occurred within the use case, then this error will be thrown
+  /// again.
+  @nonVirtual
+  Future<Out> singleOutput(In param) async {
+    final list = await call(param);
+
+    if (list.isEmpty) {
+      throw RangeError(
+          'Expected at least one output value, but instead no output was emitted.');
+    } else if (list.length > 1) {
+      throw RangeError(
+          'Expected at least one output value, but instead received ${list.length} output values.');
+    }
+
+    final last = list.last;
+    Object? error;
+    late Out value;
+
+    last.fold(defaultOnError: (e, _) => error = e, onValue: (it) => value = it);
+
+    if (error != null) {
+      throw error!;
+    }
+
+    return value;
+  }
+
   /// If you want to apply any transformations on incoming params in [transaction],
   /// then override this method.
   ///
