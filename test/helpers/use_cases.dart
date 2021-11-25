@@ -34,6 +34,11 @@ class IntToStringErrorUseCase extends UseCase<int, String> {
       Stream.error(Exception('something went wrong!'));
 }
 
+class NoOutputUseCase extends UseCase<int, String> {
+  @override
+  Stream<String> transaction(int param) async* {}
+}
+
 class MultiOutputUseCase extends UseCase<int, String> {
   @override
   Stream<String> transaction(int param) async* {
