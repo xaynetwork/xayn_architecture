@@ -113,9 +113,22 @@ class UseCaseResult<Out> implements Either<Out> {
 extension UseCaseExtension<In> on Stream<In> {
   /// Used followedBy to chain multiple use cases.
   /// The output of the current use case will be the input for [useCase].
-  Stream<Out> followedBy<Out>(UseCase<In, Out> useCase) => useCase
-      .transform(this)
-      .transform(UseCaseStreamTransformer<In, Out>(useCase.transaction));
+  Stream<Out> followedBy<Out>(UseCase<In, Out> useCase) =>
+      useCase.transform(this).transform(
+            UseCaseStreamTransformer<In, Out>(
+              useCase.transaction,
+              false,
+            ),
+          );
+
+  /// See [followedBy], but here it acts like flatMap instead of switchMap.
+  Stream<Out> followedByEvery<Out>(UseCase<In, Out> useCase) =>
+      useCase.transform(this).transform(
+            UseCaseStreamTransformer<In, Out>(
+              useCase.transaction,
+              true,
+            ),
+          );
 
   /// A hook to allow an intermediate call to `computeState`.
   /// - [consumeEvent] can return `true` to stop the last event from propagating further.

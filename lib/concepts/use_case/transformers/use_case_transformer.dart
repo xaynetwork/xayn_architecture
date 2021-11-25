@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 // ignore: implementation_imports
@@ -13,23 +14,27 @@ typedef _Transaction<In, Out> = Stream<Out> Function(In);
 @protected
 class UseCaseStreamTransformer<In, Out> extends StreamTransformerBase<In, Out> {
   final _Transaction<In, Out> _transaction;
+  final bool _expandAll;
 
   /// Creates a new UseCaseStreamTransformer.
-  UseCaseStreamTransformer(this._transaction);
+  UseCaseStreamTransformer(this._transaction, this._expandAll);
 
   @override
   Stream<Out> bind(Stream<In> stream) =>
-      forwardStream(stream, () => _UseCaseSink(_transaction));
+      forwardStream(stream, () => _UseCaseSink(_transaction, _expandAll));
 }
 
 class _UseCaseSink<In, Out> extends ForwardingSink<In, Out> {
   final _Transaction<In, Out> _transaction;
+  final bool _expandAll;
+  final Queue<StreamSubscription<Out>> _pendingSubscriptions =
+      Queue<StreamSubscription<Out>>();
   StreamSubscription<Out>? subscription;
   bool _isDone = false;
 
   bool get _isSubscribed => subscription != null;
 
-  _UseCaseSink(this._transaction);
+  _UseCaseSink(this._transaction, this._expandAll);
 
   @override
   FutureOr<void> onCancel() {
@@ -41,20 +46,34 @@ class _UseCaseSink<In, Out> extends ForwardingSink<In, Out> {
   void onData(In data) {
     final stream = _transaction(data);
 
-    subscription?.cancel();
+    createSubscription() => stream.listen(
+          sink.add,
+          onError: sink.addError,
+          onDone: () {
+            subscription?.cancel();
+            subscription = null;
 
-    subscription = stream.listen(
-      sink.add,
-      onError: sink.addError,
-      onDone: () {
-        subscription?.cancel();
-        subscription = null;
+            if (_expandAll && _pendingSubscriptions.isNotEmpty) {
+              subscription = _pendingSubscriptions.removeFirst()..resume();
 
-        if (_isDone) {
-          _maybeClose();
-        }
-      },
-    );
+              return;
+            }
+
+            if (_isDone) {
+              _maybeClose();
+            }
+          },
+        );
+
+    if (_expandAll) {
+      _pendingSubscriptions.add(createSubscription()..pause());
+
+      subscription ??= _pendingSubscriptions.removeFirst()..resume();
+    } else {
+      subscription?.cancel();
+
+      subscription = createSubscription();
+    }
   }
 
   @override
