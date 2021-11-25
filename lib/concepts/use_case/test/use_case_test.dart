@@ -73,41 +73,39 @@ void useCaseTest<U extends UseCase<In, Out>, In, Out>(
   int? take,
 }) {
   test.test(description, () async {
-    await runZonedGuarded(() async {
-      await setUp?.call();
+    await setUp?.call();
 
-      final useCase = build();
-      final output = <UseCaseResult<Out>>[];
-      final Completer completer = Completer();
-      final count = take ?? expect?.length;
+    final useCase = build();
+    final output = <UseCaseResult<Out>>[];
+    final Completer completer = Completer();
+    final count = take ?? expect?.length;
 
-      // ignore: INVALID_USE_OF_PROTECTED_MEMBER
-      var stream = Stream.fromIterable(input).asyncExpand(useCase.transaction);
+    // ignore: INVALID_USE_OF_PROTECTED_MEMBER
+    var stream = Stream.fromIterable(input).asyncExpand(useCase.transaction);
 
-      if (count != null) {
-        stream = stream.take(count);
-      }
+    if (count != null) {
+      stream = stream.take(count);
+    }
 
-      stream.listen(
-        (it) => output.add(UseCaseResult<Out>.success(it)),
-        onError: (e, s) => output.add(UseCaseResult<Out>.failure(e, s)),
-        onDone: completer.complete,
-        cancelOnError: false,
-      );
+    stream.listen(
+      (it) => output.add(UseCaseResult<Out>.success(it)),
+      onError: (e, s) => output.add(UseCaseResult<Out>.failure(e, s)),
+      onDone: completer.complete,
+      cancelOnError: false,
+    );
 
-      await Future.delayed(const Duration(milliseconds: 10));
+    await Future.delayed(const Duration(milliseconds: 10));
 
-      act?.call();
+    act?.call();
 
-      await completer.future;
+    await completer.future;
 
-      if (expect != null) {
-        test.expect(output, expect);
-      }
+    if (expect != null) {
+      test.expect(output, expect);
+    }
 
-      await verify?.call(useCase);
-      await tearDown?.call();
-    }, (Object error, _) {});
+    await verify?.call(useCase);
+    await tearDown?.call();
   });
 }
 
