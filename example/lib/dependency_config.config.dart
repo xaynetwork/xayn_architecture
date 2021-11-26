@@ -21,7 +21,8 @@ import 'domain/use_cases/readability/make_readable_use_case.dart' as _i6;
 import 'domain/use_cases/readability/process_html_use_case.dart' as _i8;
 import 'domain/use_cases/storage/hydrated_storage_init_use_case.dart' as _i5;
 import 'infrastructure/discovery_api.dart' as _i14;
-import 'main_navigation.dart' as _i3; // ignore_for_file: unnecessary_lambdas
+import 'navigation/app_navigator.dart'
+    as _i3; // ignore_for_file: unnecessary_lambdas
 
 // ignore_for_file: lines_longer_than_80_chars
 /// initializes the registration of provided dependencies inside of [GetIt]
