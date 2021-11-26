@@ -117,16 +117,17 @@ extension UseCaseExtension<In> on Stream<In> {
       useCase.transform(this).transform(
             UseCaseStreamTransformer<In, Out>(
               useCase.transaction,
-              false,
+              true,
             ),
           );
 
-  /// See [followedBy], but here it acts like flatMap instead of switchMap.
-  Stream<Out> followedByEvery<Out>(UseCase<In, Out> useCase) =>
+  /// See [followedBy], but here it acts like switchMap instead of asyncExpand.
+  @protected
+  Stream<Out> switchedBy<Out>(UseCase<In, Out> useCase) =>
       useCase.transform(this).transform(
             UseCaseStreamTransformer<In, Out>(
               useCase.transaction,
-              true,
+              false,
             ),
           );
 

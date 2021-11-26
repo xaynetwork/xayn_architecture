@@ -111,7 +111,7 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
 
     return UseCaseSink(
       controller.sink,
-      controller.stream.followedBy(useCase),
+      controller.stream.switchedBy(useCase),
       () async {
         final nextState = await computeState();
 
@@ -130,7 +130,7 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
     required In initialData,
   }) =>
       UseCaseValueStream(
-        Stream<In>.value(initialData).followedBy(useCase),
+        Stream<In>.value(initialData).switchedBy(useCase),
         () async {
           final nextState = await computeState();
 
