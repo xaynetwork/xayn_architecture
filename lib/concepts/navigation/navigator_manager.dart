@@ -9,6 +9,9 @@ import 'package:xayn_architecture/concepts/navigation/navigator_state.dart'
 import 'package:xayn_architecture/concepts/navigation/page_data.dart';
 import 'package:xayn_architecture/concepts/use_case/use_case_bloc_helper.dart';
 
+typedef StackManipulationFunction = T Function<T>(
+    T Function(StackManipulation stack) batch);
+
 class NavigatorException implements Exception {
   final String message;
 
