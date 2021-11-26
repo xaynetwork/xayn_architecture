@@ -8,7 +8,7 @@ part 'page_data.freezed.dart';
 typedef PageBuilder<T extends Widget> = T Function(dynamic arguments);
 
 @freezed
-class PageData<T extends Widget> with _$PageData<T> {
+class PageData<T extends Widget, A> with _$PageData<T, A> {
   const PageData._();
 
   factory PageData({
@@ -16,6 +16,6 @@ class PageData<T extends Widget> with _$PageData<T> {
     @Default(false) bool isInitial,
     required PageBuilder<T> builder,
     Completer? pendingResult,
-    dynamic? arguments,
+    A? arguments,
   }) = _PageData;
 }

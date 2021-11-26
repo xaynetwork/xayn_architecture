@@ -7,6 +7,5 @@ part 'navigator_state.freezed.dart';
 class NavigatorState with _$NavigatorState {
   const NavigatorState._();
 
-  factory NavigatorState({required List<PageData<dynamic>> pages}) =
-      _NavigatorState;
+  factory NavigatorState({required List<PageData> pages}) = _NavigatorState;
 }

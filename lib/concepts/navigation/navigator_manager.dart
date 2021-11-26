@@ -20,7 +20,7 @@ class NavigatorException implements Exception {
 }
 
 class StackManipulation {
-  final List<PageData<dynamic>> _stack;
+  final List<PageData> _stack;
   var _disposed = false;
 
   StackManipulation._(this._stack);
@@ -68,7 +68,7 @@ class StackManipulation {
 
 abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
     with UseCaseBlocHelper<xayn.NavigatorState> {
-  final List<PageData<dynamic>> _stack;
+  final List<PageData> _stack;
 
   NavigatorManager(List<PageData> initialPages)
       : _stack = initialPages.isNotEmpty

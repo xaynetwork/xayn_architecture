@@ -17,7 +17,7 @@ final _privateConstructorUsedError = UnsupportedError(
 class _$NavigatorStateTearOff {
   const _$NavigatorStateTearOff();
 
-  _NavigatorState call({required List<PageData<dynamic>> pages}) {
+  _NavigatorState call({required List<PageData> pages}) {
     return _NavigatorState(
       pages: pages,
     );
@@ -29,7 +29,7 @@ const $NavigatorState = _$NavigatorStateTearOff();
 
 /// @nodoc
 mixin _$NavigatorState {
-  List<PageData<dynamic>> get pages => throw _privateConstructorUsedError;
+  List<PageData> get pages => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $NavigatorStateCopyWith<NavigatorState> get copyWith =>
@@ -41,7 +41,7 @@ abstract class $NavigatorStateCopyWith<$Res> {
   factory $NavigatorStateCopyWith(
           NavigatorState value, $Res Function(NavigatorState) then) =
       _$NavigatorStateCopyWithImpl<$Res>;
-  $Res call({List<PageData<dynamic>> pages});
+  $Res call({List<PageData> pages});
 }
 
 /// @nodoc
@@ -61,7 +61,7 @@ class _$NavigatorStateCopyWithImpl<$Res>
       pages: pages == freezed
           ? _value.pages
           : pages // ignore: cast_nullable_to_non_nullable
-              as List<PageData<dynamic>>,
+              as List<PageData>,
     ));
   }
 }
@@ -73,7 +73,7 @@ abstract class _$NavigatorStateCopyWith<$Res>
           _NavigatorState value, $Res Function(_NavigatorState) then) =
       __$NavigatorStateCopyWithImpl<$Res>;
   @override
-  $Res call({List<PageData<dynamic>> pages});
+  $Res call({List<PageData> pages});
 }
 
 /// @nodoc
@@ -95,7 +95,7 @@ class __$NavigatorStateCopyWithImpl<$Res>
       pages: pages == freezed
           ? _value.pages
           : pages // ignore: cast_nullable_to_non_nullable
-              as List<PageData<dynamic>>,
+              as List<PageData>,
     ));
   }
 }
@@ -106,7 +106,7 @@ class _$_NavigatorState extends _NavigatorState {
   _$_NavigatorState({required this.pages}) : super._();
 
   @override
-  final List<PageData<dynamic>> pages;
+  final List<PageData> pages;
 
   @override
   String toString() {
@@ -132,12 +132,11 @@ class _$_NavigatorState extends _NavigatorState {
 }
 
 abstract class _NavigatorState extends NavigatorState {
-  factory _NavigatorState({required List<PageData<dynamic>> pages}) =
-      _$_NavigatorState;
+  factory _NavigatorState({required List<PageData> pages}) = _$_NavigatorState;
   _NavigatorState._() : super._();
 
   @override
-  List<PageData<dynamic>> get pages;
+  List<PageData> get pages;
   @override
   @JsonKey(ignore: true)
   _$NavigatorStateCopyWith<_NavigatorState> get copyWith =>
