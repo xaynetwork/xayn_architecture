@@ -17,13 +17,13 @@ final _privateConstructorUsedError = UnsupportedError(
 class _$PageDataTearOff {
   const _$PageDataTearOff();
 
-  _PageData<T> call<T extends Widget>(
+  _PageData<T, A> call<T extends Widget, A>(
       {required String name,
       bool isInitial = false,
       required PageBuilder builder,
       Completer<dynamic>? pendingResult,
-      dynamic? arguments}) {
-    return _PageData<T>(
+      A? arguments}) {
+    return _PageData<T, A>(
       name: name,
       isInitial: isInitial,
       builder: builder,
@@ -37,39 +37,39 @@ class _$PageDataTearOff {
 const $PageData = _$PageDataTearOff();
 
 /// @nodoc
-mixin _$PageData<T extends Widget> {
+mixin _$PageData<T extends Widget, A> {
   String get name => throw _privateConstructorUsedError;
   bool get isInitial => throw _privateConstructorUsedError;
   PageBuilder get builder => throw _privateConstructorUsedError;
   Completer<dynamic>? get pendingResult => throw _privateConstructorUsedError;
-  dynamic? get arguments => throw _privateConstructorUsedError;
+  A? get arguments => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
-  $PageDataCopyWith<T, PageData<T>> get copyWith =>
+  $PageDataCopyWith<T, A, PageData<T, A>> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $PageDataCopyWith<T extends Widget, $Res> {
+abstract class $PageDataCopyWith<T extends Widget, A, $Res> {
   factory $PageDataCopyWith(
-          PageData<T> value, $Res Function(PageData<T>) then) =
-      _$PageDataCopyWithImpl<T, $Res>;
+          PageData<T, A> value, $Res Function(PageData<T, A>) then) =
+      _$PageDataCopyWithImpl<T, A, $Res>;
   $Res call(
       {String name,
       bool isInitial,
       PageBuilder builder,
       Completer<dynamic>? pendingResult,
-      dynamic? arguments});
+      A? arguments});
 }
 
 /// @nodoc
-class _$PageDataCopyWithImpl<T extends Widget, $Res>
-    implements $PageDataCopyWith<T, $Res> {
+class _$PageDataCopyWithImpl<T extends Widget, A, $Res>
+    implements $PageDataCopyWith<T, A, $Res> {
   _$PageDataCopyWithImpl(this._value, this._then);
 
-  final PageData<T> _value;
+  final PageData<T, A> _value;
   // ignore: unused_field
-  final $Res Function(PageData<T>) _then;
+  final $Res Function(PageData<T, A>) _then;
 
   @override
   $Res call({
@@ -99,36 +99,36 @@ class _$PageDataCopyWithImpl<T extends Widget, $Res>
       arguments: arguments == freezed
           ? _value.arguments
           : arguments // ignore: cast_nullable_to_non_nullable
-              as dynamic?,
+              as A?,
     ));
   }
 }
 
 /// @nodoc
-abstract class _$PageDataCopyWith<T extends Widget, $Res>
-    implements $PageDataCopyWith<T, $Res> {
+abstract class _$PageDataCopyWith<T extends Widget, A, $Res>
+    implements $PageDataCopyWith<T, A, $Res> {
   factory _$PageDataCopyWith(
-          _PageData<T> value, $Res Function(_PageData<T>) then) =
-      __$PageDataCopyWithImpl<T, $Res>;
+          _PageData<T, A> value, $Res Function(_PageData<T, A>) then) =
+      __$PageDataCopyWithImpl<T, A, $Res>;
   @override
   $Res call(
       {String name,
       bool isInitial,
       PageBuilder builder,
       Completer<dynamic>? pendingResult,
-      dynamic? arguments});
+      A? arguments});
 }
 
 /// @nodoc
-class __$PageDataCopyWithImpl<T extends Widget, $Res>
-    extends _$PageDataCopyWithImpl<T, $Res>
-    implements _$PageDataCopyWith<T, $Res> {
+class __$PageDataCopyWithImpl<T extends Widget, A, $Res>
+    extends _$PageDataCopyWithImpl<T, A, $Res>
+    implements _$PageDataCopyWith<T, A, $Res> {
   __$PageDataCopyWithImpl(
-      _PageData<T> _value, $Res Function(_PageData<T>) _then)
-      : super(_value, (v) => _then(v as _PageData<T>));
+      _PageData<T, A> _value, $Res Function(_PageData<T, A>) _then)
+      : super(_value, (v) => _then(v as _PageData<T, A>));
 
   @override
-  _PageData<T> get _value => super._value as _PageData<T>;
+  _PageData<T, A> get _value => super._value as _PageData<T, A>;
 
   @override
   $Res call({
@@ -138,7 +138,7 @@ class __$PageDataCopyWithImpl<T extends Widget, $Res>
     Object? pendingResult = freezed,
     Object? arguments = freezed,
   }) {
-    return _then(_PageData<T>(
+    return _then(_PageData<T, A>(
       name: name == freezed
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -158,14 +158,14 @@ class __$PageDataCopyWithImpl<T extends Widget, $Res>
       arguments: arguments == freezed
           ? _value.arguments
           : arguments // ignore: cast_nullable_to_non_nullable
-              as dynamic?,
+              as A?,
     ));
   }
 }
 
 /// @nodoc
 
-class _$_PageData<T extends Widget> extends _PageData<T> {
+class _$_PageData<T extends Widget, A> extends _PageData<T, A> {
   _$_PageData(
       {required this.name,
       this.isInitial = false,
@@ -184,18 +184,18 @@ class _$_PageData<T extends Widget> extends _PageData<T> {
   @override
   final Completer<dynamic>? pendingResult;
   @override
-  final dynamic? arguments;
+  final A? arguments;
 
   @override
   String toString() {
-    return 'PageData<$T>(name: $name, isInitial: $isInitial, builder: $builder, pendingResult: $pendingResult, arguments: $arguments)';
+    return 'PageData<$T, $A>(name: $name, isInitial: $isInitial, builder: $builder, pendingResult: $pendingResult, arguments: $arguments)';
   }
 
   @override
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _PageData<T> &&
+            other is _PageData<T, A> &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.isInitial, isInitial) ||
                 other.isInitial == isInitial) &&
@@ -211,17 +211,17 @@ class _$_PageData<T extends Widget> extends _PageData<T> {
 
   @JsonKey(ignore: true)
   @override
-  _$PageDataCopyWith<T, _PageData<T>> get copyWith =>
-      __$PageDataCopyWithImpl<T, _PageData<T>>(this, _$identity);
+  _$PageDataCopyWith<T, A, _PageData<T, A>> get copyWith =>
+      __$PageDataCopyWithImpl<T, A, _PageData<T, A>>(this, _$identity);
 }
 
-abstract class _PageData<T extends Widget> extends PageData<T> {
+abstract class _PageData<T extends Widget, A> extends PageData<T, A> {
   factory _PageData(
       {required String name,
       bool isInitial,
       required PageBuilder builder,
       Completer<dynamic>? pendingResult,
-      dynamic? arguments}) = _$_PageData<T>;
+      A? arguments}) = _$_PageData<T, A>;
   _PageData._() : super._();
 
   @override
@@ -233,9 +233,9 @@ abstract class _PageData<T extends Widget> extends PageData<T> {
   @override
   Completer<dynamic>? get pendingResult;
   @override
-  dynamic? get arguments;
+  A? get arguments;
   @override
   @JsonKey(ignore: true)
-  _$PageDataCopyWith<T, _PageData<T>> get copyWith =>
+  _$PageDataCopyWith<T, A, _PageData<T, A>> get copyWith =>
       throw _privateConstructorUsedError;
 }

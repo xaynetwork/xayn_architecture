@@ -94,7 +94,7 @@ class NavigatorWidget extends RouterDelegate<xayn.NavigatorState>
   @override
   GlobalKey<NavigatorState>? get navigatorKey => _navigation;
 
-  Widget _buildWidget(PageData<dynamic> data) => data.builder(data.arguments);
+  Widget _buildWidget(PageData data) => data.builder(data.arguments);
 
   @override
   Future<void> setNewRoutePath(xayn.NavigatorState configuration) {
