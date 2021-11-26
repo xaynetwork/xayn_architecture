@@ -58,6 +58,14 @@ class MixOutputAndErrorsUseCase extends UseCase<int, String> {
   }
 }
 
+class NoInputUseCase extends UseCase<None, String> {
+  @override
+  Stream<String> transaction(None param) async* {
+    yield 'ok!';
+  }
+
+}
+
 class MultiOutputWithFailureUseCase extends UseCase<int, String> {
   @override
   Stream<String> transaction(int param) async* {
