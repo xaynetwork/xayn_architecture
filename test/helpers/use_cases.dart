@@ -63,7 +63,6 @@ class NoInputUseCase extends UseCase<None, String> {
   Stream<String> transaction(None param) async* {
     yield 'ok!';
   }
-
 }
 
 class MultiOutputWithFailureUseCase extends UseCase<int, String> {
