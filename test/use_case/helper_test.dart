@@ -2,7 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:test/test.dart';
 import 'package:xayn_architecture/xayn_architecture.dart';
 
-import 'helpers/use_cases.dart';
+import '../helpers/use_cases.dart';
 import 'use_case_bloc_helper_test.dart';
 
 void main() {
