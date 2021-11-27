@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:test/test.dart';
 import 'package:xayn_architecture/concepts/use_case/transformers/use_case_transformer.dart';
 
-import 'helpers/use_cases.dart';
+import '../helpers/use_cases.dart';
 
 void main() {
   late IntToStringUseCase useCase;
