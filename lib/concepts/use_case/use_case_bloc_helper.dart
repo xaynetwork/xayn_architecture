@@ -68,6 +68,10 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   /// right before [computeState] triggers.
   void scheduleComputeState(FutureOr Function()? handler) async {
     computeStateNow() async {
+      if (!_didInitHandlers) {
+        return;
+      }
+
       final nextState = await computeState();
 
       if (nextState != null) emit(nextState);
