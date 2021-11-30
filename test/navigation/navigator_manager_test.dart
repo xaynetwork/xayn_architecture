@@ -63,7 +63,7 @@ void main() {
   blocTest<AppNavigation, xayn.NavigatorState>(
     'Adding a new page the page shows up on the end of the page list.',
     build: () => AppNavigation([page1]),
-    act: (m) => m.push(page2),
+    act: (m) => m.changeStack((stack) => stack.push(page2)),
     expect: () => [
       equals(xayn.NavigatorState(pages: [
         page1,
@@ -98,7 +98,7 @@ void main() {
     'Requesting a result from a page will deliver this result when provided.',
     build: () => AppNavigation([page1]),
     verify: (m) async {
-      final result = m.pushForResult(page2);
+      final result = m.changeStack((stack) => stack.pushForResult(page2));
       m.pop("test result");
       expect(await result, "test result");
       expect(m.state.pages, [page1]);
@@ -109,7 +109,7 @@ void main() {
     'Requesting a result from a page will deliver null when popped without a result.',
     build: () => AppNavigation([page1]),
     verify: (m) async {
-      final result = m.pushForResult(page2);
+      final result = m.changeStack((stack) => stack.pushForResult(page2));
       m.popRoute();
       expect(await result, null);
       expect(m.state.pages, [page1]);
@@ -120,7 +120,7 @@ void main() {
     'Replace last page is possible when using the stack manipulation.',
     build: () => AppNavigation([page1]),
     act: (m) async {
-      m.replace(page2);
+      m.changeStack((stack) => stack.replace(page2));
     },
     expect: () => [
       equals(xayn.NavigatorState(pages: [

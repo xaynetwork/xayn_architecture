@@ -7,24 +7,22 @@ import 'package:xayn_architecture_example/navigation/pages.dart';
 void main() {
   configureDependencies();
 
-  runApp(const App());
+  runApp(App());
 }
 
-class App extends StatefulWidget {
-  const App({Key? key}) : super(key: key);
+class App extends StatelessWidget {
+  App({Key? key}) : super(key: key);
 
-  @override
-  State<StatefulWidget> createState() => _AppState();
-}
+  final AppNavigatorManger _manger = di.get();
+  final _parser =
+      xayn.NavigatorRouteInformationParser(pageMap: PageRegistry.pageMap);
 
-class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
-    AppNavigatorManger manger = di.get();
+    final navigatorDelegate = xayn.NavigatorDelegate(_manger);
     return MaterialApp.router(
-      routeInformationParser:
-          xayn.NavigatorRouteInformationParser(pageMap: PageRegistry.pageMap),
-      routerDelegate: xayn.NavigatorWidget(manger),
+      routeInformationParser: _parser,
+      routerDelegate: navigatorDelegate,
       title: 'Navigator Test App',
       theme: ThemeData(
         primarySwatch: Colors.blue,

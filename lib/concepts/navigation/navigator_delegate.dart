@@ -27,12 +27,16 @@ class NavigatorRouteInformationParser
       RouteInformation routeInformation) async {
     var url = Uri.parse(routeInformation.location ?? "/");
 
-    final initialPage = pageMap[""];
-    if (initialPage == null) {
+    final initialPages = pageMap.values.where((element) => element.isInitial);
+    if (initialPages.isEmpty) {
       throw "No inital page provided!";
     }
 
-    final pages = <PageData>[initialPage] +
+    if (initialPages.length > 1) {
+      throw "More than one initial page defined: $initialPages";
+    }
+
+    final pages = <PageData>[initialPages.first] +
         url.pathSegments.map((e) {
           final page = pageMap[e];
           if (page == null) {
@@ -44,16 +48,16 @@ class NavigatorRouteInformationParser
   }
 }
 
-class NavigatorWidget extends RouterDelegate<xayn.NavigatorState>
+class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
     with PopNavigatorRouterDelegateMixin, ChangeNotifier {
-  static RouteInformationParser routeInformationParser(
+  static RouteInformationParser defaultParser(
           {required Map<String, PageData> pageMap}) =>
       NavigatorRouteInformationParser(pageMap: pageMap);
 
   final NavigatorManager _navigationManager;
   final _navigation = GlobalKey<NavigatorState>();
 
-  NavigatorWidget(this._navigationManager);
+  NavigatorDelegate(this._navigationManager);
 
   @override
   Future<bool> popRoute() {
@@ -64,12 +68,10 @@ class NavigatorWidget extends RouterDelegate<xayn.NavigatorState>
   final _controller = MaterialApp.createMaterialHeroController();
 
   @override
-  Widget build(BuildContext context) {
-    return BlocBuilder(
-      builder: _buildNavigator,
-      bloc: _navigationManager,
-    );
-  }
+  Widget build(BuildContext context) => BlocBuilder(
+        builder: _buildNavigator,
+        bloc: _navigationManager,
+      );
 
   Navigator _buildNavigator(BuildContext context, xayn.NavigatorState state) {
     return Navigator(
