@@ -27,7 +27,7 @@ class StackManipulation {
 
   void pop([result]) {
     assert(_stack.isNotEmpty,
-        "Stack needs to have at leased one element for a pop operation");
+        "Stack needs to have at least one element for a pop operation");
     final last = _stack.removeLast();
     var pendingResult = last.pendingResult;
     if (pendingResult != null && !pendingResult.isCompleted) {
@@ -39,30 +39,31 @@ class StackManipulation {
   }
 
   void push(PageData page) {
-    assert(!_disposed,
-        "Tried to use stack manipulation after it was disposed. Are you running the manipulation outside of changeStack method?");
+    _checkDisposed();
     _stack.add(page);
   }
 
   Future<T?> pushForResult<T>(PageData page) {
-    assert(!_disposed,
-        "Tried to use stack manipulation after it was disposed. Are you running the manipulation outside of changeStack method?");
+    _checkDisposed();
     final completer = Completer<T?>();
     _stack.add(page.copyWith(pendingResult: completer));
     return completer.future;
   }
 
   void replace(PageData page, [dynamic result]) {
-    assert(!_disposed,
-        "Tried to use stack manipulation after it was disposed. Are you running the manipulation outside of changeStack method?");
+    _checkDisposed();
     pop(result);
     push(page);
   }
 
   void dispose() {
+    _checkDisposed();
+    _disposed = true;
+  }
+
+  void _checkDisposed() {
     assert(!_disposed,
         "Tried to use stack manipulation after it was disposed. Are you running the manipulation outside of changeStack method?");
-    _disposed = true;
   }
 }
 
@@ -87,35 +88,21 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
     return lastResult;
   }
 
-  @protected
-  Future<T?> pushForResult<T>(PageData page) {
-    return changeStack((stack) => stack.pushForResult(page));
-  }
-
-  @protected
-  void push(PageData page) {
-    changeStack((stack) => stack.push(page));
-  }
-
+  /// Called by the Navigator Delegate
   @protected
   void pop([dynamic result]) {
     changeStack((stack) => stack.pop(result));
   }
 
-  @protected
-  void replace(PageData page, [dynamic result]) {
-    changeStack((stack) => stack.replace(page, result));
-  }
-
   void _updateState() {
     assert(_stack.isNotEmpty,
-        "The page stack always needs to contain at leased one page.");
+        "The page stack always needs to contain at least one page.");
     emit(xayn.NavigatorState(
         pages: UnmodifiableListView(_stack.toList(growable: false))));
   }
 
   /// Should return true when pop is handled
-  /// Called by the Navigator widget
+  /// Called by the Navigator Delegate
   @protected
   Future<bool> popRoute() {
     if (_stack.length <= 1) {
@@ -128,14 +115,15 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
 
   /// Called by the Navigator Widget
   @protected
-  void restoreState(xayn.NavigatorState state) {
+  bool restoreState(xayn.NavigatorState state) {
     if (state == this.state) {
-      return;
+      return false;
     }
     _stack.clear();
     for (var element in state.pages) {
       _stack.add(element);
     }
     _updateState();
+    return true;
   }
 }
