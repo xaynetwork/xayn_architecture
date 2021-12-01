@@ -48,6 +48,7 @@ void main() {
     'With only one page pop will be not handled anymore (which should cause the app to close)',
     build: () => AppNavigation([page1]),
     verify: (m) async {
+      // ignore: INVALID_USE_OF_PROTECTED_MEMBER
       expect(await m.popRoute(), false);
     },
   );
@@ -56,6 +57,7 @@ void main() {
     'With more than one page pop will be handled.',
     build: () => AppNavigation([page1, page2]),
     verify: (m) async {
+      // ignore: INVALID_USE_OF_PROTECTED_MEMBER
       expect(await m.popRoute(), true);
     },
   );
@@ -63,7 +65,8 @@ void main() {
   blocTest<AppNavigation, xayn.NavigatorState>(
     'Adding a new page the page shows up on the end of the page list.',
     build: () => AppNavigation([page1]),
-    act: (m) => m.changeStack((stack) => stack.push(page2)),
+    // ignore: INVALID_USE_OF_PROTECTED_MEMBER
+    act: (m) => m.manipulateStack((stack) => stack.push(page2)),
     expect: () => [
       equals(xayn.NavigatorState(pages: [
         page1,
@@ -75,6 +78,7 @@ void main() {
   blocTest<AppNavigation, xayn.NavigatorState>(
     'Removing a page will emit a state with one page less.',
     build: () => AppNavigation([page1, page2]),
+    // ignore: INVALID_USE_OF_PROTECTED_MEMBER
     act: (m) => m.pop(),
     expect: () => [
       equals(xayn.NavigatorState(pages: [
@@ -86,6 +90,7 @@ void main() {
   blocTest<AppNavigation, xayn.NavigatorState>(
     'Doing a back action is similar to the pop() method, which removes a page.',
     build: () => AppNavigation([page1, page2]),
+    // ignore: INVALID_USE_OF_PROTECTED_MEMBER
     act: (m) => m.popRoute(),
     expect: () => [
       equals(xayn.NavigatorState(pages: [
@@ -98,7 +103,9 @@ void main() {
     'Requesting a result from a page will deliver this result when provided.',
     build: () => AppNavigation([page1]),
     verify: (m) async {
-      final result = m.changeStack((stack) => stack.pushForResult(page2));
+      // ignore: INVALID_USE_OF_PROTECTED_MEMBER
+      final result = m.manipulateStack((stack) => stack.pushForResult(page2));
+      // ignore: INVALID_USE_OF_PROTECTED_MEMBER
       m.pop("test result");
       expect(await result, "test result");
       expect(m.state.pages, [page1]);
@@ -109,7 +116,9 @@ void main() {
     'Requesting a result from a page will deliver null when popped without a result.',
     build: () => AppNavigation([page1]),
     verify: (m) async {
-      final result = m.changeStack((stack) => stack.pushForResult(page2));
+      // ignore: INVALID_USE_OF_PROTECTED_MEMBER
+      final result = m.manipulateStack((stack) => stack.pushForResult(page2));
+      // ignore: INVALID_USE_OF_PROTECTED_MEMBER
       m.popRoute();
       expect(await result, null);
       expect(m.state.pages, [page1]);
@@ -120,7 +129,8 @@ void main() {
     'Replace last page is possible when using the stack manipulation.',
     build: () => AppNavigation([page1]),
     act: (m) async {
-      m.changeStack((stack) => stack.replace(page2));
+      // ignore: INVALID_USE_OF_PROTECTED_MEMBER
+      m.manipulateStack((stack) => stack.replace(page2));
     },
     expect: () => [
       equals(xayn.NavigatorState(pages: [

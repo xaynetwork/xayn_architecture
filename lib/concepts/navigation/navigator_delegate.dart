@@ -12,8 +12,10 @@ import 'navigator_manager.dart';
 ///
 class NavigatorRouteInformationParser
     extends RouteInformationParser<xayn.NavigatorState> {
+  /// @nodoc
   final Map<String, PageData> pageMap;
 
+  /// @nodoc
   NavigatorRouteInformationParser({required this.pageMap});
 
   @override
@@ -65,11 +67,13 @@ class NavigatorRouteInformationParser
 /// {@endtemplate}
 class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
     with PopNavigatorRouterDelegateMixin, ChangeNotifier {
-  static RouteInformationParser defaultParser(
-          {required Map<String, PageData> pageMap}) =>
-      NavigatorRouteInformationParser(pageMap: pageMap);
+  /// The NavigationManager that manages all the routing rules
+  @protected
+  final NavigatorManager navigatorManager;
 
-  final NavigatorManager _navigatorManager;
+  /// The assumption is that a navigation can be swapped arount to other subtrees and keep its
+  /// state. So this is why a Navigator uses a GlobalKey. There should be no issue with having two navigators
+  /// in the same tree.
   final _navigation = GlobalKey<NavigatorState>();
 
   /// Creates a new NavigatorDelegate.
@@ -77,12 +81,12 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   /// In the NavigatorDelegate works in conjunction with the [NavigatorManager]. It implements the
   /// Navigator 2.0 behaviour and renders a set of pages. Those are presented 'declarative'
   /// with in the current context and can be manipulated by using the [NavigatorManager].
-  NavigatorDelegate(this._navigatorManager);
+  NavigatorDelegate(this.navigatorManager);
 
   @override
   Future<bool> popRoute() {
     // ignore: INVALID_USE_OF_PROTECTED_MEMBER
-    return _navigatorManager.popRoute();
+    return navigatorManager.popRoute();
   }
 
   final _controller = MaterialApp.createMaterialHeroController();
@@ -90,7 +94,7 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   @override
   Widget build(BuildContext context) => BlocBuilder(
         builder: _buildNavigator,
-        bloc: _navigatorManager,
+        bloc: navigatorManager,
       );
 
   Navigator _buildNavigator(BuildContext context, xayn.NavigatorState state) {
@@ -107,7 +111,7 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
         }
 
         // ignore: INVALID_USE_OF_PROTECTED_MEMBER
-        _navigatorManager.pop();
+        navigatorManager.pop();
         return true;
       },
     );
@@ -121,7 +125,7 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   @override
   Future<void> setNewRoutePath(xayn.NavigatorState configuration) {
     // ignore: INVALID_USE_OF_PROTECTED_MEMBER
-    _navigatorManager.restoreState(configuration);
+    navigatorManager.restoreState(configuration);
     return SynchronousFuture(null);
   }
 }

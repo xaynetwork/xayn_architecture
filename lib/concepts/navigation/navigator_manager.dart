@@ -4,44 +4,20 @@ import 'dart:collection';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:xayn_architecture/concepts/navigation/navigator_delegate.dart';
 import 'package:xayn_architecture/concepts/navigation/navigator_state.dart'
     as xayn;
 import 'package:xayn_architecture/concepts/navigation/page_data.dart';
 import 'package:xayn_architecture/concepts/use_case/use_case_bloc_helper.dart';
 
 /// A function to simplify an injected manipulator setup like this.
-///
-/// {@template use_case}
-/// ```dart
-/// class AppNavigatorManger extends NavigatorManager {
-///   AppNavigatorManger() : super([initialPage]);
-///
-///   SomePageExitActions get somePageExitActions =>
-///       _SomePageExitActions(changeStack);
-/// }
-///
-/// abstract class SomePageExitActions {
-///   @override
-///   void onPlusButtonClicked();
-/// }
-///
-/// class _SomePageExitActions extends SomePageExitActions {
-///   _SomePageExitActions(this.changeStack);
-///
-///   final StackManipulationFunction changeStack;
-///
-///   @override
-///   void onPlusButtonClicked() {
-///     changeStack((stack) => stack.pop());
-///   }
-/// }
-/// ```
-/// {@endtemplate}
+/// @see [NavigatorManager]
 typedef StackManipulationFunction = T Function<T>(
     T Function(StackManipulation stack) batch);
 
 /// The [NavigatorException] thrown on all general validation errors.
 class NavigatorException implements Exception {
+  /// @nodoc
   final String message;
 
   /// @nodoc
@@ -65,13 +41,15 @@ class StackManipulation {
   StackManipulation._(this._stack);
 
   /// Removes the top page and delivers an optional [result] to the original caller of
-  /// [pushForResult]. This methods should only be called within a [NavigatorManager.changeStack] call.
-  void pop([result]) {
+  /// [pushForResult]. This methods should only be called within a [NavigatorManager.manipulateStack] call.
+  void pop<A>([A? result]) {
     _checkDisposed();
     assert(_stack.isNotEmpty,
         "Stack needs to have at least one element for a pop operation");
     final last = _stack.removeLast();
-    var pendingResult = last.pendingResult;
+
+    // ignore: INVALID_USE_OF_PROTECTED_MEMBER
+    final pendingResult = last.pendingResult;
     if (pendingResult != null && !pendingResult.isCompleted) {
       // Completing the result with null or a value.
       // Completing with null can happen when we don't provide a result because of a back navigation action;
@@ -97,18 +75,18 @@ class StackManipulation {
   }
 
   /// Removes the current page (delivers a [result]) and puts a new [page] on top.
-  void replace(PageData page, [dynamic result]) {
+  void replace<A>(PageData page, [A? result]) {
     _checkDisposed();
-    pop(result);
+    pop<A>(result);
     push(page);
   }
 
   /// Removes the current page (delivers a [result]) and puts a new [page] on top,
   /// that can be awaited for result.
-  Future<T?> replaceForResult<T>(PageData page, [dynamic result]) {
+  Future<T?> replaceForResult<T, A>(PageData page, [A? result]) {
     _checkDisposed();
-    pop(result);
-    return pushForResult(page);
+    pop<A>(result);
+    return pushForResult<T>(page);
   }
 
   @protected
@@ -123,10 +101,43 @@ class StackManipulation {
   }
 }
 
+/// Base class that manages routing. It emits a [NavigatorState] that
+/// contains a stack of [PageData] which should be rendered by the [NavigatorDelegate]
+/// Extend the [NavigatorManager] like that to provide routing actions:
+///
+/// {@template navigator_manager}
+/// ```dart
+/// class AppNavigatorManger extends NavigatorManager {
+///   AppNavigatorManger() : super([initialPage]);
+///
+///   SomePageExitActions get somePageExitActions =>
+///       _SomePageExitActions(changeStack);
+/// }
+///
+/// abstract class SomePageExitActions {
+///   @override
+///   void onPlusButtonClicked();
+/// }
+///
+/// class _SomePageExitActions extends SomePageExitActions {
+///   _SomePageExitActions(this.changeStack);
+///
+///   final StackManipulationFunction changeStack;
+///
+///   @override
+///   void onPlusButtonClicked() {
+///     changeStack((stack) => stack.pop());
+///   }
+/// }
+/// ```
+/// {@endtemplate}
 abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
     with UseCaseBlocHelper<xayn.NavigatorState> {
   final List<PageData> _stack;
 
+  /// Creates a new Navigation Manager with a list of initial pages.
+  /// Note: that the stack can not be empty and the last page can only be
+  /// replaced but not popped.
   NavigatorManager(List<PageData> initialPages)
       : _stack = initialPages.isNotEmpty
             ? initialPages
@@ -135,8 +146,9 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
         super(xayn.NavigatorState(
             pages: UnmodifiableListView(initialPages.toList(growable: false))));
 
+  /// Allows to safely manipulate the stack without exposing internals of the manager
   @protected
-  T changeStack<T>(T Function(StackManipulation stack) batch) {
+  T manipulateStack<T>(T Function(StackManipulation stack) batch) {
     final manipulation = StackManipulation._(_stack);
     final lastResult = batch(manipulation);
     manipulation._dispose();
@@ -147,7 +159,7 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
   /// Called by the Navigator Delegate
   @protected
   void pop([dynamic result]) {
-    changeStack((stack) => stack.pop(result));
+    manipulateStack((stack) => stack.pop(result));
   }
 
   void _updateState() {
@@ -162,11 +174,11 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
   @protected
   Future<bool> popRoute() {
     if (_stack.length <= 1) {
-      return SynchronousFuture(false);
+      return Future.value(false);
     }
 
     pop();
-    return SynchronousFuture(true);
+    return Future.value(true);
   }
 
   /// Called by the Navigator Widget

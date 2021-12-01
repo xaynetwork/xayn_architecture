@@ -10,6 +10,7 @@ void main() {
   });
 
   test('Two PageDatas with same builders are the same.', () {
+    // ignore: prefer_function_declarations_over_variables
     final builder = (args) => const Text('page1');
     var page1 = PageData(name: "", builder: builder);
     var page2 = PageData(name: "", builder: builder);
@@ -17,6 +18,7 @@ void main() {
   });
 
   test('Two PageDatas with same arguments are the same.', () {
+    // ignore: prefer_function_declarations_over_variables
     final builder = (args) => const Text('page1');
     var page1 = PageData(name: "", builder: builder, arguments: "args");
     var page2 = PageData(name: "", builder: builder, arguments: "args");
@@ -24,6 +26,7 @@ void main() {
   });
 
   test('Two PageDatas with different arguments are not equal.', () {
+    // ignore: prefer_function_declarations_over_variables
     final builder = (args) => const Text('page1');
     var page1 = PageData(name: "", builder: builder, arguments: "args1");
     var page2 = PageData(name: "", builder: builder, arguments: "args2");
