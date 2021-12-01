@@ -1,31 +1,73 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:xayn_architecture/concepts/navigation/navigator_state.dart'
     as xayn;
 import 'package:xayn_architecture/concepts/navigation/page_data.dart';
 import 'package:xayn_architecture/concepts/use_case/use_case_bloc_helper.dart';
 
+/// A function to simplify an injected manipulator setup like this.
+///
+/// {@template use_case}
+/// ```dart
+/// class AppNavigatorManger extends NavigatorManager {
+///   AppNavigatorManger() : super([initialPage]);
+///
+///   SomePageExitActions get somePageExitActions =>
+///       _SomePageExitActions(changeStack);
+/// }
+///
+/// abstract class SomePageExitActions {
+///   @override
+///   void onPlusButtonClicked();
+/// }
+///
+/// class _SomePageExitActions extends SomePageExitActions {
+///   _SomePageExitActions(this.changeStack);
+///
+///   final StackManipulationFunction changeStack;
+///
+///   @override
+///   void onPlusButtonClicked() {
+///     changeStack((stack) => stack.pop());
+///   }
+/// }
+/// ```
+/// {@endtemplate}
 typedef StackManipulationFunction = T Function<T>(
     T Function(StackManipulation stack) batch);
 
+/// The [NavigatorException] thrown on all general validation errors.
 class NavigatorException implements Exception {
   final String message;
 
+  /// @nodoc
   NavigatorException(this.message);
+
+  @override
   String toString() => "NavigatorException: $message";
 }
 
+/// The [StackManipulation] is the ruleset that can be applied on a stack of [PageData].
+/// Like [StackManipulation.push], [StackManipulation.pop] etc. This helper class
+/// guards the [NavigatorManager] from being illegally manipulated and allows to externalize
+/// route navigation rules to sub classes, see the docs of [StackManipulationFunction].
+///
+/// The [StackManipulation] allows to call multiple methods and create even temporary 'illegal'
+/// states (like replacing the initial page)
 class StackManipulation {
   final List<PageData> _stack;
   var _disposed = false;
 
   StackManipulation._(this._stack);
 
+  /// Removes the top page and delivers an optional [result] to the original caller of
+  /// [pushForResult]. This methods should only be called within a [NavigatorManager.changeStack] call.
   void pop([result]) {
+    _checkDisposed();
     assert(_stack.isNotEmpty,
         "Stack needs to have at least one element for a pop operation");
     final last = _stack.removeLast();
@@ -38,11 +80,15 @@ class StackManipulation {
     }
   }
 
+  /// Adds a new Page on top of the current stack.
   void push(PageData page) {
     _checkDisposed();
     _stack.add(page);
   }
 
+  /// Add a new page on top of the current stack and requests a new result from
+  /// new page, which is returned as a Future<T?>. It can be null if the page
+  /// was popped without a result (like when it was swiped back/ back pressed.)
   Future<T?> pushForResult<T>(PageData page) {
     _checkDisposed();
     final completer = Completer<T?>();
@@ -50,13 +96,23 @@ class StackManipulation {
     return completer.future;
   }
 
+  /// Removes the current page (delivers a [result]) and puts a new [page] on top.
   void replace(PageData page, [dynamic result]) {
     _checkDisposed();
     pop(result);
     push(page);
   }
 
-  void dispose() {
+  /// Removes the current page (delivers a [result]) and puts a new [page] on top,
+  /// that can be awaited for result.
+  Future<T?> replaceForResult<T>(PageData page, [dynamic result]) {
+    _checkDisposed();
+    pop(result);
+    return pushForResult(page);
+  }
+
+  @protected
+  void _dispose() {
     _checkDisposed();
     _disposed = true;
   }
@@ -83,7 +139,7 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
   T changeStack<T>(T Function(StackManipulation stack) batch) {
     final manipulation = StackManipulation._(_stack);
     final lastResult = batch(manipulation);
-    manipulation.dispose();
+    manipulation._dispose();
     _updateState();
     return lastResult;
   }

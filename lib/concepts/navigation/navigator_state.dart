@@ -1,11 +1,15 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:equatable/equatable.dart';
 import 'package:xayn_architecture/concepts/navigation/page_data.dart';
 
-part 'navigator_state.freezed.dart';
+/// The [NavigatorState] describes which pages will be rendered in the [Navigator] Widget.
+class NavigatorState extends Equatable {
+  /// see [NavigatorState] constructor
+  final List<PageData> pages;
 
-@freezed
-class NavigatorState with _$NavigatorState {
-  const NavigatorState._();
+  /// - [pages] represent the pages that are currently available in the Navigator backstack.
+  NavigatorState({required List<PageData> pages})
+      : pages = List.unmodifiable(pages);
 
-  factory NavigatorState({required List<PageData> pages}) = _NavigatorState;
+  @override
+  List<Object?> get props => [pages];
 }
