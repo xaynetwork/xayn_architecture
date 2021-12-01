@@ -19,7 +19,7 @@ class Page extends StatelessWidget {
 final page1 = PageData(
   name: "",
   builder: (args) => Page(
-    argument: args,
+    argument: args!,
   ),
   arguments: "page1",
 );

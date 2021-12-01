@@ -8,6 +8,8 @@ import 'package:xayn_architecture/concepts/navigation/page_data.dart';
 
 import 'navigator_manager.dart';
 
+/// TODO will be changed soon to support a different pageMap declaration
+///
 class NavigatorRouteInformationParser
     extends RouteInformationParser<xayn.NavigatorState> {
   final Map<String, PageData> pageMap;
@@ -48,21 +50,39 @@ class NavigatorRouteInformationParser
   }
 }
 
+/// {@template use_case}
+/// ```dart
+/// @override
+/// Widget build(BuildContext context) {
+///   final navigatorDelegate = NavigatorDelegate(navigatorManager);
+///   return MaterialApp.router(
+///     routeInformationParser: NavigatorDelegate.defaultParser(pageMap: pageMap),
+///     routerDelegate: navigatorDelegate,
+///
+///   );
+/// }
+/// ```
+/// {@endtemplate}
 class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
     with PopNavigatorRouterDelegateMixin, ChangeNotifier {
   static RouteInformationParser defaultParser(
           {required Map<String, PageData> pageMap}) =>
       NavigatorRouteInformationParser(pageMap: pageMap);
 
-  final NavigatorManager _navigationManager;
+  final NavigatorManager _navigatorManager;
   final _navigation = GlobalKey<NavigatorState>();
 
-  NavigatorDelegate(this._navigationManager);
+  /// Creates a new NavigatorDelegate.
+  ///
+  /// In the NavigatorDelegate works in conjunction with the [NavigatorManager]. It implements the
+  /// Navigator 2.0 behaviour and renders a set of pages. Those are presented 'declarative'
+  /// with in the current context and can be manipulated by using the [NavigatorManager].
+  NavigatorDelegate(this._navigatorManager);
 
   @override
   Future<bool> popRoute() {
     // ignore: INVALID_USE_OF_PROTECTED_MEMBER
-    return _navigationManager.popRoute();
+    return _navigatorManager.popRoute();
   }
 
   final _controller = MaterialApp.createMaterialHeroController();
@@ -70,7 +90,7 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   @override
   Widget build(BuildContext context) => BlocBuilder(
         builder: _buildNavigator,
-        bloc: _navigationManager,
+        bloc: _navigatorManager,
       );
 
   Navigator _buildNavigator(BuildContext context, xayn.NavigatorState state) {
@@ -87,7 +107,7 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
         }
 
         // ignore: INVALID_USE_OF_PROTECTED_MEMBER
-        _navigationManager.pop();
+        _navigatorManager.pop();
         return true;
       },
     );
@@ -101,7 +121,7 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   @override
   Future<void> setNewRoutePath(xayn.NavigatorState configuration) {
     // ignore: INVALID_USE_OF_PROTECTED_MEMBER
-    _navigationManager.restoreState(configuration);
+    _navigatorManager.restoreState(configuration);
     return SynchronousFuture(null);
   }
 }
