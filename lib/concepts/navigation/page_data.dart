@@ -29,8 +29,8 @@ class PageData<T extends Widget, A> extends Equatable {
   /// Creates a new PageData that describes how pages are build when navigating
   const PageData({
     required String name,
-    this.isInitial = false,
     required this.builder,
+    this.isInitial = false,
     this.arguments,
     @protected this.pendingResult,
   })  : _name = name,
@@ -41,8 +41,8 @@ class PageData<T extends Widget, A> extends Equatable {
   /// The [pendingResult] is always recreated because it should not be copied to another page.
   PageData copyWith({
     String? name,
-    bool? isInitial,
     PageBuilder<T, A>? builder,
+    bool? isInitial,
     Completer? pendingResult,
     A? arguments,
   }) =>
@@ -50,7 +50,7 @@ class PageData<T extends Widget, A> extends Equatable {
         isInitial: isInitial ?? this.isInitial,
         name: name ?? this.name,
         builder: builder ?? this.builder,
-        pendingResult: this.pendingResult,
+        pendingResult: pendingResult,
         arguments: arguments ?? this.arguments,
       );
 

@@ -7,10 +7,10 @@ class AppNavigatorManger extends xayn.NavigatorManager {
   AppNavigatorManger() : super([PageRegistry.pageIncrement]);
 
   PageIncrementExitActions get pageIncrementExitActions =>
-      _PageIncrementExitActions(changeStack);
+      _PageIncrementExitActions(manipulateStack);
 
   PageDialogExitActions get pageDialogExitActions =>
-      _PageDialogExitActions(changeStack);
+      _PageDialogExitActions(manipulateStack);
 }
 
 class _PageIncrementExitActions extends PageIncrementExitActions {

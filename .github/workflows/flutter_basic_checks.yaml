@@ -25,9 +25,19 @@ jobs:
         with:
           version: $FLUTTER_VERSION
 
+      - name: Write .env.dev file
+        working-directory: ./example
+        run: |
+          cat <<EOT >> .env.dev
+          SEARCH_API_BASE_URL="api-gw.xaynet.dev"
+          SEARCH_API_SECRET_KEY=""
+          IMAGE_FETCHER_URL="https://img-fetcher.xaynet.dev"
+          EOT
+
       - name: Get Packages
         run: |
           flutter pub get
+
       - name: Run build_runner
         run: |
           cd example
