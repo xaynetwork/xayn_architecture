@@ -92,15 +92,28 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   final _controller = MaterialApp.createMaterialHeroController();
 
   @override
-  Widget build(BuildContext context) => BlocBuilder(
-        builder: _buildNavigator,
+  Widget build(BuildContext context) => buildNavigator();
+
+  /// Builds a navigator widget that reacts to changes of the Navigation Manager.
+  /// Can be customized by passing
+  /// - [observers] : NavigatorObservers that can react on popping a route
+  Widget buildNavigator({
+    List<NavigatorObserver> observers = const [],
+  }) =>
+      BlocBuilder(
+        builder: (context, xayn.NavigatorState state) => _buildNavigator(
+            context: context, state: state, observers: observers),
         bloc: navigatorManager,
       );
 
-  Navigator _buildNavigator(BuildContext context, xayn.NavigatorState state) {
+  Navigator _buildNavigator({
+    required BuildContext context,
+    required xayn.NavigatorState state,
+    List<NavigatorObserver> observers = const [],
+  }) {
     return Navigator(
       key: _navigation,
-      observers: [_controller],
+      observers: observers + [_controller],
       pages: state.pages
           .map(_buildWidget)
           .map((e) => MaterialPage(child: e))
