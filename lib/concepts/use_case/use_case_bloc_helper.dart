@@ -23,7 +23,7 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
     if (!_didInitHandlers) {
       _didInitHandlers = true;
 
-      computeState();
+      _computeStateNow();
     }
 
     return super.stream;
@@ -67,21 +67,21 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   /// if [handler] is provided, then this method will be executed
   /// right before [computeState] triggers.
   void scheduleComputeState(FutureOr Function()? handler) async {
-    computeStateNow() async {
-      if (!_didInitHandlers) {
-        return;
-      }
-
-      final nextState = await computeState();
-
-      if (nextState != null) emit(nextState);
-    }
-
     if (handler != null) {
       await handler();
     }
 
-    computeStateNow();
+    _computeStateNow();
+  }
+
+  Future<void> _computeStateNow() async {
+    if (!_didInitHandlers) {
+      return;
+    }
+
+    final nextState = await computeState();
+
+    if (nextState != null) emit(nextState);
   }
 
   @override
