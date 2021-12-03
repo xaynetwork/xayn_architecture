@@ -16,7 +16,7 @@ void main() {
               onSuccess: (double it) => it,
               onFailure: (e, s) => -2.0,
             ),
-        expect: () => const [.0]);
+        expect: () => const [-1.0, .0]);
 
     blocTest('standard throughput using inner async generator: ',
         build: () => TestCubit.consume(
@@ -26,7 +26,7 @@ void main() {
               onSuccess: (double it) => it,
               onFailure: (e, s) => -2.0,
             ),
-        expect: () => const [.0]);
+        expect: () => const [-1.0, .0]);
 
     blocTest('transformed throughput: ',
         build: () => TestCubit.consume(
@@ -37,7 +37,7 @@ void main() {
             onFailure: (e, s) => '-2.0',
             transformer: (Stream<double> out) =>
                 out.map((it) => it.toString())),
-        expect: () => const ['0.0']);
+        expect: () => const ['-1.0', '0.0']);
   });
 
   group('pipe: ', () {
@@ -53,7 +53,7 @@ void main() {
           cubit.onHandler(2);
           cubit.onHandler(3);
         },
-        expect: () => const [3.0]);
+        expect: () => const [-1.0, 3.0]);
 
     blocTest('standard throughput using inner async generator: ',
         build: () => TestCubit.pipe(
@@ -67,7 +67,7 @@ void main() {
           cubit.onHandler(2);
           cubit.onHandler(3);
         },
-        expect: () => const [3.0]);
+        expect: () => const [-1.0, 3.0]);
 
     blocTest('transformed throughput: ',
         build: () => TestCubit<String, int, double, String>.pipe(
@@ -82,7 +82,7 @@ void main() {
           cubit.onHandler(2);
           cubit.onHandler(3);
         },
-        expect: () => const ['3.0']);
+        expect: () => const ['-1.0', '3.0']);
   });
 }
 
