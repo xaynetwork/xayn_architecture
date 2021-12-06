@@ -21,6 +21,6 @@ void main() {
 
   group('Use case bloc helper: ', () {
     blocTest('consume with none: ',
-        build: () => testCubit, expect: () => const ['ok!']);
+        build: () => testCubit, expect: () => const ['empty', 'ok!']);
   });
 }
