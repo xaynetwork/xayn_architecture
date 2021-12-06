@@ -53,9 +53,9 @@ class UseCaseValueStream<Out> implements Either<Out> {
         _value = null;
         _error = e;
         _stackTrace = s;
-      }
 
-      _onData();
+        _onData();
+      }
     })
       ..addTo(_subscriptions);
   }
