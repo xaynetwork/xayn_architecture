@@ -27,7 +27,7 @@ class NavigatorException implements Exception {
   String toString() => "NavigatorException: $message";
 }
 
-/// The [StackManipulation] is the ruleset that can be applied on a stack of [PageData].
+/// The [StackManipulation] is the rule set that can be applied on a stack of [PageData].
 /// Like [StackManipulation.push], [StackManipulation.pop] etc. This helper class
 /// guards the [NavigatorManager] from being illegally manipulated and allows to externalize
 /// route navigation rules to sub classes, see the docs of [StackManipulationFunction].
@@ -35,14 +35,14 @@ class NavigatorException implements Exception {
 /// The [StackManipulation] allows to call multiple methods and create even temporary 'illegal'
 /// states (like replacing the initial page)
 class StackManipulation {
-  final List<PageData> _stack;
+  final List<UntypedPageData> _stack;
   final Map<PageData, Completer> _callbacks;
   var _disposed = false;
 
   StackManipulation._(this._stack, this._callbacks);
 
   /// The current page on the stack.
-  PageData<Widget>? get currentPage => length > 0 ? _stack.last : null;
+  UntypedPageData? get currentPage => length > 0 ? _stack.last : null;
 
   /// The length of the stack
   int get length => _stack.length;
@@ -67,7 +67,7 @@ class StackManipulation {
   /// Adds a new Page on top of the current stack.
   ///
   /// @see [pushForResult] if you need a result from a page.
-  void push(PageData page) {
+  void push(UntypedPageData page) {
     _checkDisposed();
     _stack.add(page);
   }
@@ -81,7 +81,7 @@ class StackManipulation {
   /// Note: Awaiting this does not provide any guarantees about a successful navigation, the
   /// stack and the [NavigatorManager] are solely creating the state of the app, that will
   /// be rendered by the [NavigatorDelegate].
-  Future<T?> pushForResult<T>(PageData page) {
+  Future<T?> pushForResult<T>(UntypedPageData page) {
     _checkDisposed();
     final completer = Completer<T?>();
     _callbacks[page] = completer;
@@ -90,7 +90,7 @@ class StackManipulation {
   }
 
   /// Removes the current page (delivers a [result]) and puts a new [page] on top.
-  void replace<A>(PageData page, [A? result]) {
+  void replace<A>(UntypedPageData page, [A? result]) {
     _checkDisposed();
     pop<A>(result);
     push(page);
@@ -104,7 +104,7 @@ class StackManipulation {
   /// Note: Awaiting this does not provide any guarantees about a successful navigation, the
   /// stack and the [NavigatorManager] are solely creating the state of the app, that will
   /// be rendered by the [NavigatorDelegate].
-  Future<T?> replaceForResult<T, A>(PageData page, [A? result]) {
+  Future<T?> replaceForResult<T, A>(UntypedPageData page, [A? result]) {
     _checkDisposed();
     pop<A>(result);
     return pushForResult<T>(page);
@@ -154,13 +154,13 @@ class StackManipulation {
 /// {@endtemplate}
 abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
     with UseCaseBlocHelper<xayn.NavigatorState> {
-  final List<PageData> _stack;
-  final Map<PageData, Completer> _callbacks;
+  final List<UntypedPageData> _stack;
+  final Map<UntypedPageData, Completer> _callbacks;
 
   /// Creates a new Navigation Manager with a list of initial pages.
   /// Note: that the stack can not be empty and the last page can only be
   /// replaced but not popped.
-  NavigatorManager(List<PageData> initialPages)
+  NavigatorManager(List<UntypedPageData> initialPages)
       : _callbacks = {},
         _stack = initialPages.isNotEmpty
             ? initialPages
