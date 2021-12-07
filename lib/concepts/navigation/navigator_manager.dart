@@ -36,9 +36,16 @@ class NavigatorException implements Exception {
 /// states (like replacing the initial page)
 class StackManipulation {
   final List<PageData> _stack;
+  final Map<PageData, Completer> _callbacks;
   var _disposed = false;
 
-  StackManipulation._(this._stack);
+  StackManipulation._(this._stack, this._callbacks);
+
+  /// The current page on the stack.
+  PageData<Widget>? get currentPage => length > 0 ? _stack.last : null;
+
+  /// The length of the stack
+  int get length => _stack.length;
 
   /// Removes the top page and delivers an optional [result] to the original caller of
   /// [pushForResult]. This methods should only be called within a [NavigatorManager.manipulateStack] call.
@@ -48,8 +55,7 @@ class StackManipulation {
         "Stack needs to have at least one element for a pop operation");
     final last = _stack.removeLast();
 
-    // ignore: INVALID_USE_OF_PROTECTED_MEMBER
-    final pendingResult = last.pendingResult;
+    final pendingResult = _callbacks.remove(last);
     if (pendingResult != null && !pendingResult.isCompleted) {
       // Completing the result with null or a value.
       // Completing with null can happen when we don't provide a result because of a back navigation action;
@@ -59,6 +65,8 @@ class StackManipulation {
   }
 
   /// Adds a new Page on top of the current stack.
+  ///
+  /// @see [pushForResult] if you need a result from a page.
   void push(PageData page) {
     _checkDisposed();
     _stack.add(page);
@@ -67,10 +75,17 @@ class StackManipulation {
   /// Add a new page on top of the current stack and requests a new result from
   /// new page, which is returned as a Future<T?>. It can be null if the page
   /// was popped without a result (like when it was swiped back/ back pressed.)
+  ///
+  /// @see [push] for calls that don't expect a result.
+  ///
+  /// Note: Awaiting this does not provide any guarantees about a successful navigation, the
+  /// stack and the [NavigatorManager] are solely creating the state of the app, that will
+  /// be rendered by the [NavigatorDelegate].
   Future<T?> pushForResult<T>(PageData page) {
     _checkDisposed();
     final completer = Completer<T?>();
-    _stack.add(page.copyWith(pendingResult: completer));
+    _callbacks[page] = completer;
+    _stack.add(page);
     return completer.future;
   }
 
@@ -83,6 +98,12 @@ class StackManipulation {
 
   /// Removes the current page (delivers a [result]) and puts a new [page] on top,
   /// that can be awaited for result.
+  ///
+  /// @see [pushForResult]
+  ///
+  /// Note: Awaiting this does not provide any guarantees about a successful navigation, the
+  /// stack and the [NavigatorManager] are solely creating the state of the app, that will
+  /// be rendered by the [NavigatorDelegate].
   Future<T?> replaceForResult<T, A>(PageData page, [A? result]) {
     _checkDisposed();
     pop<A>(result);
@@ -134,12 +155,14 @@ class StackManipulation {
 abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
     with UseCaseBlocHelper<xayn.NavigatorState> {
   final List<PageData> _stack;
+  final Map<PageData, Completer> _callbacks;
 
   /// Creates a new Navigation Manager with a list of initial pages.
   /// Note: that the stack can not be empty and the last page can only be
   /// replaced but not popped.
   NavigatorManager(List<PageData> initialPages)
-      : _stack = initialPages.isNotEmpty
+      : _callbacks = {},
+        _stack = initialPages.isNotEmpty
             ? initialPages
             : throw NavigatorException(
                 "At least one initial pages needs to be provided"),
@@ -149,7 +172,7 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
   /// Allows to safely manipulate the stack without exposing internals of the manager
   @protected
   T manipulateStack<T>(T Function(StackManipulation stack) batch) {
-    final manipulation = StackManipulation._(_stack);
+    final manipulation = StackManipulation._(_stack, _callbacks);
     final lastResult = batch(manipulation);
     manipulation._dispose();
     _updateState();
