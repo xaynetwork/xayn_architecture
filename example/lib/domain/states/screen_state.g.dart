@@ -8,7 +8,9 @@ part of 'screen_state.dart';
 
 _$_ScreenState _$$_ScreenStateFromJson(Map<String, dynamic> json) =>
     _$_ScreenState(
-      results: json['results'] as List<dynamic>?,
+      results: (json['results'] as List<dynamic>?)
+          ?.map((e) => Document.fromJson(e as Map<String, dynamic>))
+          .toList(),
       resultIndex: json['resultIndex'] as int,
       isComplete: json['isComplete'] as bool,
       isInErrorState: json['isInErrorState'] as bool,

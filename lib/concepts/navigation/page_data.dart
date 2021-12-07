@@ -5,10 +5,10 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 
 /// The [PageBuilder] build a new Widget out of provided [arguments].
-typedef PageBuilder<T extends Widget, A> = T Function(A? arguments);
+typedef PageBuilder<T extends Widget,A> = T Function(A? arguments);
 
 /// Describes the page that will be displayed in on the screen.
-class PageData<T extends Widget, A> extends Equatable {
+class PageData<T extends Widget> extends Equatable {
   /// [name] a unique name, that can be used as a uri fragment (use only uri conform chars)
   String get name => isInitial ? "" : _name;
   final String _name;
@@ -17,14 +17,14 @@ class PageData<T extends Widget, A> extends Equatable {
   final bool isInitial;
 
   ///[builder] builds the page widget
-  final PageBuilder<T, A> builder;
+  final PageBuilder<T, dynamic> builder;
 
   /// [pendingResult] - do not use, internally used to transport results to callers
   @protected
   final Completer? pendingResult;
 
   /// [arguments] are arbitary arguments delivered to the builder
-  final A? arguments;
+  final dynamic arguments;
 
   /// Creates a new PageData that describes how pages are build when navigating
   const PageData({
@@ -41,12 +41,12 @@ class PageData<T extends Widget, A> extends Equatable {
   /// The [pendingResult] is always recreated because it should not be copied to another page.
   PageData copyWith({
     String? name,
-    PageBuilder<T, A>? builder,
+    PageBuilder<T, dynamic>? builder,
     bool? isInitial,
     Completer? pendingResult,
-    A? arguments,
+    dynamic arguments,
   }) =>
-      PageData<T, A>(
+      PageData<T>(
         isInitial: isInitial ?? this.isInitial,
         name: name ?? this.name,
         builder: builder ?? this.builder,
@@ -59,7 +59,7 @@ class PageData<T extends Widget, A> extends Equatable {
     bool clearArguments = false,
     bool clearPendingResult = false,
   }) =>
-      PageData<T, A>(
+      PageData<T>(
         isInitial: isInitial,
         name: name,
         builder: builder,

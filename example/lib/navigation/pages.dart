@@ -3,7 +3,7 @@ import 'package:xayn_architecture/xayn_architecture_navigation.dart' as xayn;
 import 'package:xayn_architecture_example/dependency_config.dart';
 
 class PageRegistry {
-  static final pageIncrement = xayn.PageData(
+  static final pageIncrement = xayn.PageData<PageIncrement>(
     isInitial: true,
     name: "pageIncrement",
     builder: (args) => PageIncrement(
@@ -11,7 +11,7 @@ class PageRegistry {
     ),
     arguments: 1,
   );
-  static final pageDialog = xayn.PageData(
+  static final pageDialog = xayn.PageData<PageDialog>(
     isInitial: true,
     name: "pageDialog",
     builder: (args) => PageDialog(
@@ -20,8 +20,8 @@ class PageRegistry {
     arguments: 1,
   );
 
-  static final pages = [pageIncrement, pageDialog];
-  static final pageMap =
+  static final List<xayn.PageData<Widget>> pages = [pageIncrement, pageDialog];
+  static final Map<String, xayn.PageData<Widget>> pageMap =
       Map.fromEntries(pages.map((e) => MapEntry(e.isInitial ? "" : e.name, e)));
 }
 
