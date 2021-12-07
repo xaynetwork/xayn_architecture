@@ -27,7 +27,7 @@ final page2 = page1.copyWith(arguments: "page2");
 final page3 = page1.copyWith(arguments: "page3");
 
 class AppNavigation extends xayn.NavigatorManager {
-  AppNavigation(List<PageData> initialPages) : super(initialPages);
+  AppNavigation(List<UntypedPageData> initialPages) : super(initialPages);
 }
 
 void main() {
