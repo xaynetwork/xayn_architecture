@@ -19,10 +19,6 @@ class PageData<T extends Widget> extends Equatable {
   ///[builder] builds the page widget
   final PageBuilder<T, dynamic> builder;
 
-  /// [pendingResult] - do not use, internally used to transport results to callers
-  @protected
-  final Completer? pendingResult;
-
   /// [arguments] are arbitary arguments delivered to the builder
   final dynamic arguments;
 
@@ -32,7 +28,6 @@ class PageData<T extends Widget> extends Equatable {
     required this.builder,
     this.isInitial = false,
     this.arguments,
-    @protected this.pendingResult,
   })  : _name = name,
         assert(arguments is! List || arguments is UnmodifiableListView,
             "Page arguments needs to be unmodifiable! Provided: $arguments");
@@ -43,14 +38,12 @@ class PageData<T extends Widget> extends Equatable {
     String? name,
     PageBuilder<T, dynamic>? builder,
     bool? isInitial,
-    Completer? pendingResult,
     dynamic arguments,
   }) =>
       PageData<T>(
         isInitial: isInitial ?? this.isInitial,
         name: name ?? this.name,
         builder: builder ?? this.builder,
-        pendingResult: pendingResult,
         arguments: arguments ?? this.arguments,
       );
 
@@ -63,11 +56,10 @@ class PageData<T extends Widget> extends Equatable {
         isInitial: isInitial,
         name: name,
         builder: builder,
-        pendingResult: clearPendingResult ? null : pendingResult,
         arguments: clearArguments ? null : arguments,
       );
 
   @override
   List<Object?> get props =>
-      [_name, builder, isInitial, pendingResult, arguments];
+      [_name, builder, isInitial, arguments];
 }
