@@ -200,22 +200,22 @@ class _$_ResultCardState extends _ResultCardState {
             other is _ResultCardState &&
             (identical(other.isComplete, isComplete) ||
                 other.isComplete == isComplete) &&
-            const DeepCollectionEquality().equals(other.result, result) &&
+            (identical(other.result, result) || other.result == result) &&
             const DeepCollectionEquality()
                 .equals(other.paragraphs, paragraphs) &&
             const DeepCollectionEquality().equals(other.images, images) &&
-            const DeepCollectionEquality()
-                .equals(other.paletteGenerator, paletteGenerator));
+            (identical(other.paletteGenerator, paletteGenerator) ||
+                other.paletteGenerator == paletteGenerator));
   }
 
   @override
   int get hashCode => Object.hash(
       runtimeType,
       isComplete,
-      const DeepCollectionEquality().hash(result),
+      result,
       const DeepCollectionEquality().hash(paragraphs),
       const DeepCollectionEquality().hash(images),
-      const DeepCollectionEquality().hash(paletteGenerator));
+      paletteGenerator);
 
   @JsonKey(ignore: true)
   @override

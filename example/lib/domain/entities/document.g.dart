@@ -7,8 +7,10 @@ part of 'document.dart';
 // **************************************************************************
 
 _$_Document _$$_DocumentFromJson(Map<String, dynamic> json) => _$_Document(
-      documentId: json['documentId'],
-      webResource: json['webResource'],
+      documentId:
+          DocumentId.fromJson(json['documentId'] as Map<String, dynamic>),
+      webResource:
+          WebResource.fromJson(json['webResource'] as Map<String, dynamic>),
       nonPersonalizedRank: json['nonPersonalizedRank'] as int,
       personalizedRank: json['personalizedRank'] as int,
     );

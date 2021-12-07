@@ -13,7 +13,7 @@ import 'navigator_manager.dart';
 class NavigatorRouteInformationParser
     extends RouteInformationParser<xayn.NavigatorState> {
   /// @nodoc
-  final Map<String, PageData> pageMap;
+  final Map<String, PageData<Widget>> pageMap;
 
   /// @nodoc
   NavigatorRouteInformationParser({required this.pageMap});
@@ -40,7 +40,7 @@ class NavigatorRouteInformationParser
       throw "More than one initial page defined: $initialPages";
     }
 
-    final pages = <PageData>[initialPages.first] +
+    final pages = <PageData<Widget>>[initialPages.first] +
         url.pathSegments.map((e) {
           final page = pageMap[e];
           if (page == null) {
@@ -133,7 +133,9 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   @override
   GlobalKey<NavigatorState>? get navigatorKey => _navigation;
 
-  Widget _buildWidget(PageData data) => data.builder(data.arguments);
+  T _buildWidget<T extends Widget>(PageData<T> data) {
+    return data.builder(data.arguments);
+  }
 
   @override
   Future<void> setNewRoutePath(xayn.NavigatorState configuration) {

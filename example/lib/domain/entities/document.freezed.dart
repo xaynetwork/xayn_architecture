@@ -64,6 +64,9 @@ abstract class $DocumentCopyWith<$Res> {
       WebResource webResource,
       int nonPersonalizedRank,
       int personalizedRank});
+
+  $DocumentIdCopyWith<$Res> get documentId;
+  $WebResourceCopyWith<$Res> get webResource;
 }
 
 /// @nodoc
@@ -100,6 +103,20 @@ class _$DocumentCopyWithImpl<$Res> implements $DocumentCopyWith<$Res> {
               as int,
     ));
   }
+
+  @override
+  $DocumentIdCopyWith<$Res> get documentId {
+    return $DocumentIdCopyWith<$Res>(_value.documentId, (value) {
+      return _then(_value.copyWith(documentId: value));
+    });
+  }
+
+  @override
+  $WebResourceCopyWith<$Res> get webResource {
+    return $WebResourceCopyWith<$Res>(_value.webResource, (value) {
+      return _then(_value.copyWith(webResource: value));
+    });
+  }
 }
 
 /// @nodoc
@@ -112,6 +129,11 @@ abstract class _$DocumentCopyWith<$Res> implements $DocumentCopyWith<$Res> {
       WebResource webResource,
       int nonPersonalizedRank,
       int personalizedRank});
+
+  @override
+  $DocumentIdCopyWith<$Res> get documentId;
+  @override
+  $WebResourceCopyWith<$Res> get webResource;
 }
 
 /// @nodoc
@@ -183,10 +205,10 @@ class _$_Document extends _Document {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _Document &&
-            const DeepCollectionEquality()
-                .equals(other.documentId, documentId) &&
-            const DeepCollectionEquality()
-                .equals(other.webResource, webResource) &&
+            (identical(other.documentId, documentId) ||
+                other.documentId == documentId) &&
+            (identical(other.webResource, webResource) ||
+                other.webResource == webResource) &&
             (identical(other.nonPersonalizedRank, nonPersonalizedRank) ||
                 other.nonPersonalizedRank == nonPersonalizedRank) &&
             (identical(other.personalizedRank, personalizedRank) ||
@@ -194,12 +216,8 @@ class _$_Document extends _Document {
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(documentId),
-      const DeepCollectionEquality().hash(webResource),
-      nonPersonalizedRank,
-      personalizedRank);
+  int get hashCode => Object.hash(runtimeType, documentId, webResource,
+      nonPersonalizedRank, personalizedRank);
 
   @JsonKey(ignore: true)
   @override
