@@ -13,7 +13,7 @@ import 'navigator_manager.dart';
 class NavigatorRouteInformationParser
     extends RouteInformationParser<xayn.NavigatorState> {
   /// @nodoc
-  final Map<String, PageData<Widget>> pageMap;
+  final Map<String, UntypedPageData> pageMap;
 
   /// @nodoc
   NavigatorRouteInformationParser({required this.pageMap});
@@ -33,14 +33,14 @@ class NavigatorRouteInformationParser
 
     final initialPages = pageMap.values.where((element) => element.isInitial);
     if (initialPages.isEmpty) {
-      throw "No inital page provided!";
+      throw "No initial page provided!";
     }
 
     if (initialPages.length > 1) {
       throw "More than one initial page defined: $initialPages";
     }
 
-    final pages = <PageData<Widget>>[initialPages.first] +
+    final pages = <UntypedPageData>[initialPages.first] +
         url.pathSegments.map((e) {
           final page = pageMap[e];
           if (page == null) {
@@ -71,7 +71,7 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   @protected
   final NavigatorManager navigatorManager;
 
-  /// The assumption is that a navigation can be swapped arount to other subtrees and keep its
+  /// The assumption is that a navigation can be swapped around to other subtrees and keep its
   /// state. So this is why a Navigator uses a GlobalKey. There should be no issue with having two navigators
   /// in the same tree.
   final _navigation = GlobalKey<NavigatorState>();
@@ -133,7 +133,7 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   @override
   GlobalKey<NavigatorState>? get navigatorKey => _navigation;
 
-  T _buildWidget<T extends Widget>(PageData<T> data) {
+  T _buildWidget<T extends Widget>(PageData<T, Object> data) {
     return data.builder(data.arguments);
   }
 
