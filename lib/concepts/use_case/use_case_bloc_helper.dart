@@ -5,8 +5,6 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:xayn_architecture/xayn_architecture.dart';
-import 'package:xayn_architecture/concepts/use_case/use_case_stream.dart';
-import 'package:xayn_architecture/concepts/use_case/use_case_base.dart';
 
 /// A method signature, defines a Function with exactly one parameter.
 /// Used in or `cubit`s to define handlers that are exposed to widgets.
