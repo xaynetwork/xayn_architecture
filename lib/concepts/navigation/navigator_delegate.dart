@@ -8,15 +8,25 @@ import 'package:xayn_architecture/concepts/navigation/page_data.dart';
 
 import 'navigator_manager.dart';
 
-/// TODO will be changed soon to support a different pageMap declaration
-///
+/// @nodoc
+abstract class RouteRegistration {
+  /// The page that usually would be translated from '/'
+  UntypedPageData get initialPage;
+
+  /// Maps segments of a url (i.e. user, details, ... from /user/details) to
+  /// a page.
+  UntypedPageData mapSegmentToPage({required String segment});
+}
+
+/// The default route parser that simply splits a url in segments and
+/// translates those with the help of the [RouteRegistration], that should be
+/// implemented in conjunction with the [NavigatorManager] for internal consistency.
 class NavigatorRouteInformationParser
     extends RouteInformationParser<xayn.NavigatorState> {
-  /// @nodoc
-  final Map<String, UntypedPageData> pageMap;
+  final RouteRegistration _routeRegistration;
 
   /// @nodoc
-  NavigatorRouteInformationParser({required this.pageMap});
+  NavigatorRouteInformationParser(this._routeRegistration);
 
   @override
   RouteInformation restoreRouteInformation(configuration) {
@@ -31,23 +41,13 @@ class NavigatorRouteInformationParser
       RouteInformation routeInformation) async {
     var url = Uri.parse(routeInformation.location ?? "/");
 
-    final initialPages = pageMap.values.where((element) => element.isInitial);
-    if (initialPages.isEmpty) {
-      throw "No initial page provided!";
+    var pages = url.pathSegments.map((e) {
+      return _routeRegistration.mapSegmentToPage(segment: e);
+    }).toList();
+    if (pages.isEmpty || !pages.first.isInitial) {
+      pages = <UntypedPageData>[_routeRegistration.initialPage] + pages;
     }
 
-    if (initialPages.length > 1) {
-      throw "More than one initial page defined: $initialPages";
-    }
-
-    final pages = <UntypedPageData>[initialPages.first] +
-        url.pathSegments.map((e) {
-          final page = pageMap[e];
-          if (page == null) {
-            throw "No page registered with path: $e";
-          }
-          return page;
-        }).toList();
     return xayn.NavigatorState(pages: pages);
   }
 }
@@ -111,6 +111,10 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
     required xayn.NavigatorState state,
     List<NavigatorObserver> observers = const [],
   }) {
+    if (state.pages.isEmpty) {
+      throw "Pushed invalid state to Navigator, needs to have at least one page: $state";
+    }
+
     return Navigator(
       key: _navigation,
       observers: observers + [_controller],

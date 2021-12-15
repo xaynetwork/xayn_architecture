@@ -15,7 +15,7 @@ typedef UntypedPageBuilder = PageBuilder<Widget, Object>;
 /// Describes the page that will be displayed in on the screen.
 class PageData<T extends Widget, A> extends Equatable {
   /// [name] a unique name, that can be used as a uri fragment (use only uri conform chars)
-  String get name => isInitial ? "" : _name;
+  String get name => _name;
   final String _name;
 
   /// [isInitial] should be used when a page is the root page

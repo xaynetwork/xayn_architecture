@@ -4,7 +4,7 @@ import 'package:xayn_architecture_example/navigation/pages.dart';
 
 @singleton
 class AppNavigatorManger extends xayn.NavigatorManager {
-  AppNavigatorManger() : super([PageRegistry.pageIncrement]);
+  AppNavigatorManger() : super(pages: PageRegistry.pages);
 
   PageIncrementExitActions get pageIncrementExitActions =>
       _PageIncrementExitActions(manipulateStack);
