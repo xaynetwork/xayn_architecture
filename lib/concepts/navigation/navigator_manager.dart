@@ -8,7 +8,6 @@ import 'package:xayn_architecture/concepts/navigation/navigator_delegate.dart';
 import 'package:xayn_architecture/concepts/navigation/navigator_state.dart'
     as xayn;
 import 'package:xayn_architecture/concepts/navigation/page_data.dart';
-import 'package:xayn_architecture/concepts/use_case/use_case_bloc_helper.dart';
 
 /// A function to simplify an injected manipulator setup like this.
 /// @see [NavigatorManager]
@@ -122,6 +121,10 @@ class StackManipulation {
   }
 }
 
+class _InitialState extends xayn.NavigatorState {
+  _InitialState() : super(pages: []);
+}
+
 /// Base class that manages routing. It emits a [NavigatorState] that
 /// contains a stack of [PageData] which should be rendered by the [NavigatorDelegate]
 /// Extend the [NavigatorManager] like that to provide routing actions:
@@ -153,21 +156,27 @@ class StackManipulation {
 /// ```
 /// {@endtemplate}
 abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
-    with UseCaseBlocHelper<xayn.NavigatorState> {
+    implements RouteRegistration {
   final List<UntypedPageData> _stack;
   final Map<UntypedPageData, Completer> _callbacks;
+  final Set<UntypedPageData> _pages;
+  final List<UntypedPageData>? _initialPagesConfiguration;
 
   /// Creates a new Navigation Manager with a list of initial pages.
   /// Note: that the stack can not be empty and the last page can only be
   /// replaced but not popped.
-  NavigatorManager(List<UntypedPageData> initialPages)
-      : _callbacks = {},
-        _stack = initialPages.isNotEmpty
-            ? initialPages
-            : throw NavigatorException(
-                "At least one initial pages needs to be provided"),
-        super(xayn.NavigatorState(
-            pages: UnmodifiableListView(initialPages.toList(growable: false))));
+  NavigatorManager({
+    required Set<UntypedPageData> pages,
+    List<UntypedPageData>? initialPageConfiguration,
+  })  : _callbacks = {},
+        _stack = [],
+        _pages = pages,
+        _initialPagesConfiguration = initialPageConfiguration,
+        super(_InitialState()) {
+    _stack.clear();
+    _stack.addAll(computeInitialPages());
+    _updateState();
+  }
 
   /// Allows to safely manipulate the stack without exposing internals of the manager
   @protected
@@ -204,7 +213,8 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
     return Future.value(true);
   }
 
-  /// Called by the Navigator Widget
+  /// Called by the Navigator Widget when a restored state or an external
+  /// path is pushed to the app
   @protected
   bool restoreState(xayn.NavigatorState state) {
     if (state == this.state) {
@@ -216,5 +226,47 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
     }
     _updateState();
     return true;
+  }
+
+  /// Override this to return a different initial page configuration than
+  /// just [initialPage]
+  @protected
+  List<UntypedPageData> computeInitialPages() =>
+      _initialPagesConfiguration ?? [initialPage];
+
+  @override
+  UntypedPageData get initialPage {
+    final initialPages = _pages.where((p) => p.isInitial);
+    if (initialPages.isEmpty) {
+      throw NavigatorException(
+          "No initial pages registered. Known pages: $_pages."
+          "\nDid you miss adding an initial page?");
+    }
+
+    if (initialPages.length > 1) {
+      throw NavigatorException(
+          "Too many initial pages registered, found $initialPages."
+          "\nDid you made a copy+paste error?");
+    }
+
+    return initialPages.first;
+  }
+
+  @override
+  UntypedPageData mapSegmentToPage({required String segment}) {
+    final foundPages = _pages.where((p) => p.name == segment);
+    if (foundPages.isEmpty) {
+      throw NavigatorException(
+          "No page registered for segment: '$segment', registered pages: $_pages."
+          "\nDid you miss adding a page to the NavigatorManager?");
+    }
+
+    if (foundPages.length > 1) {
+      throw NavigatorException(
+          "Too many pages registered for: '$segment', found $foundPages."
+          "\nDid you made a copy+paste error?");
+    }
+
+    return foundPages.first;
   }
 }

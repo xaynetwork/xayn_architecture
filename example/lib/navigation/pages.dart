@@ -20,7 +20,7 @@ class PageRegistry {
     arguments: 1,
   );
 
-  static final List<xayn.UntypedPageData> pages = [pageIncrement, pageDialog];
+  static final Set<xayn.UntypedPageData> pages = {pageIncrement, pageDialog};
   static final Map<String, xayn.UntypedPageData> pageMap =
       Map.fromEntries(pages.map((e) => MapEntry(e.isInitial ? "" : e.name, e)));
 }

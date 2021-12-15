@@ -22,23 +22,25 @@ final page1 = PageData(
     argument: args!,
   ),
   arguments: "page1",
+  isInitial: true,
 );
-final page2 = page1.copyWith(arguments: "page2");
-final page3 = page1.copyWith(arguments: "page3");
+final page2 = page1.copyWith(arguments: "page2", isInitial: false);
+final page3 = page1.copyWith(arguments: "page3", isInitial: false);
 
 class AppNavigation extends xayn.NavigatorManager {
-  AppNavigation(List<UntypedPageData> initialPages) : super(initialPages);
+  AppNavigation(Set<UntypedPageData> pages, {List<UntypedPageData>? initials})
+      : super(pages: pages, initialPageConfiguration: initials);
 }
 
 void main() {
   test('No initial page provided causes an error.', () {
-    expect(() => AppNavigation([]),
+    expect(() => AppNavigation({}),
         throwsA(const TypeMatcher<xayn.NavigatorException>()));
   });
 
   blocTest<AppNavigation, xayn.NavigatorState>(
     'Initial page is shown when providing a page..',
-    build: () => AppNavigation([page1]),
+    build: () => AppNavigation({page1}),
     verify: (AppNavigation manager) {
       expect(manager.state, xayn.NavigatorState(pages: [page1]));
     },
@@ -46,7 +48,7 @@ void main() {
 
   blocTest<AppNavigation, xayn.NavigatorState>(
     'With only one page pop will be not handled anymore (which should cause the app to close)',
-    build: () => AppNavigation([page1]),
+    build: () => AppNavigation({page1}),
     verify: (m) async {
       // ignore: INVALID_USE_OF_PROTECTED_MEMBER
       expect(await m.popRoute(), false);
@@ -55,7 +57,9 @@ void main() {
 
   blocTest<AppNavigation, xayn.NavigatorState>(
     'With more than one page pop will be handled.',
-    build: () => AppNavigation([page1, page2]),
+    build: () => AppNavigation({page1, page2}),
+    // ignore: INVALID_USE_OF_PROTECTED_MEMBER
+    act: (m) => m.manipulateStack((stack) => stack.push(page2)),
     verify: (m) async {
       // ignore: INVALID_USE_OF_PROTECTED_MEMBER
       expect(await m.popRoute(), true);
@@ -64,7 +68,7 @@ void main() {
 
   blocTest<AppNavigation, xayn.NavigatorState>(
     'Adding a new page the page shows up on the end of the page list.',
-    build: () => AppNavigation([page1]),
+    build: () => AppNavigation({page1}),
     // ignore: INVALID_USE_OF_PROTECTED_MEMBER
     act: (m) => m.manipulateStack((stack) => stack.push(page2)),
     expect: () => [
@@ -77,7 +81,7 @@ void main() {
 
   blocTest<AppNavigation, xayn.NavigatorState>(
     'Removing a page will emit a state with one page less.',
-    build: () => AppNavigation([page1, page2]),
+    build: () => AppNavigation({page1, page2}, initials: [page1, page2]),
     // ignore: INVALID_USE_OF_PROTECTED_MEMBER
     act: (m) => m.pop(),
     expect: () => [
@@ -89,7 +93,7 @@ void main() {
 
   blocTest<AppNavigation, xayn.NavigatorState>(
     'Doing a back action is similar to the pop() method, which removes a page.',
-    build: () => AppNavigation([page1, page2]),
+    build: () => AppNavigation({page1, page2}, initials: [page1, page2]),
     // ignore: INVALID_USE_OF_PROTECTED_MEMBER
     act: (m) => m.popRoute(),
     expect: () => [
@@ -101,7 +105,7 @@ void main() {
 
   blocTest<AppNavigation, xayn.NavigatorState>(
     'Requesting a result from a page will deliver this result when provided.',
-    build: () => AppNavigation([page1]),
+    build: () => AppNavigation({page1}),
     verify: (m) async {
       // ignore: INVALID_USE_OF_PROTECTED_MEMBER
       final result = m.manipulateStack((stack) => stack.pushForResult(page2));
@@ -114,7 +118,7 @@ void main() {
 
   blocTest<AppNavigation, xayn.NavigatorState>(
     'Requesting a result from a page will deliver null when popped without a result.',
-    build: () => AppNavigation([page1]),
+    build: () => AppNavigation({page1}),
     verify: (m) async {
       // ignore: INVALID_USE_OF_PROTECTED_MEMBER
       final result = m.manipulateStack((stack) => stack.pushForResult(page2));
@@ -127,7 +131,7 @@ void main() {
 
   blocTest<AppNavigation, xayn.NavigatorState>(
     'Replace last page is possible when using the stack manipulation.',
-    build: () => AppNavigation([page1]),
+    build: () => AppNavigation({page1}),
     act: (m) async {
       // ignore: INVALID_USE_OF_PROTECTED_MEMBER
       m.manipulateStack((stack) => stack.replace(page2));
