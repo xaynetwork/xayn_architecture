@@ -160,6 +160,8 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
   final List<UntypedPageData> _stack;
   final Map<UntypedPageData, Completer> _callbacks;
   final Set<UntypedPageData> _pages;
+
+  /// Mainly useful for testing
   final List<UntypedPageData>? _initialPagesConfiguration;
 
   /// Creates a new Navigation Manager with a list of initial pages.
@@ -198,7 +200,9 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
     assert(_stack.isNotEmpty,
         "The page stack always needs to contain at least one page.");
     emit(xayn.NavigatorState(
-        pages: UnmodifiableListView(_stack.toList(growable: false))));
+      pages: UnmodifiableListView(_stack.toList(growable: false)),
+      source: xayn.Source.navigator,
+    ));
   }
 
   /// Should return true when pop is handled
@@ -217,6 +221,11 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
   /// path is pushed to the app
   @protected
   bool restoreState(xayn.NavigatorState state) {
+    // The initial path can be ignored because it comne from the router initialization itself
+    if (state.source == xayn.Source.initialization) {
+      return false;
+    }
+
     if (state == this.state) {
       return false;
     }

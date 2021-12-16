@@ -142,7 +142,27 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   }
 
   @override
+  Future<void> setInitialRoutePath(xayn.NavigatorState configuration) {
+    print("ROUTE setInitialRoutePath: $configuration");
+    return super.setInitialRoutePath(xayn.NavigatorState(
+        pages: configuration.pages, source: xayn.Source.initialization));
+  }
+
+  @override
+  Future<void> setRestoredRoutePath(xayn.NavigatorState configuration) {
+    print("ROUTE setRestoredRoutePath: $configuration");
+    return super.setRestoredRoutePath(xayn.NavigatorState(
+        pages: configuration.pages, source: xayn.Source.restoration));
+  }
+
+  @override
   Future<void> setNewRoutePath(xayn.NavigatorState configuration) {
+    if (configuration.source == xayn.Source.unknown) {
+      print("ROUTE setNewRoutePath - external: $configuration");
+      configuration = xayn.NavigatorState(
+          pages: configuration.pages, source: xayn.Source.external);
+    }
+    print("restoreState $configuration");
     // ignore: INVALID_USE_OF_PROTECTED_MEMBER
     navigatorManager.restoreState(configuration);
     return SynchronousFuture(null);

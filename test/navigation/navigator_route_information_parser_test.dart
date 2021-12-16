@@ -70,4 +70,13 @@ void main() {
       state([page1, page2, page3]),
     );
   });
+
+  test('"/page2/page1" should add page1 at the beginning and the end as well',
+      () async {
+    expect(
+      await parser().parseRouteInformation(
+          const RouteInformation(location: '/page2/page1')),
+      state([page1, page2, page1]),
+    );
+  });
 }
