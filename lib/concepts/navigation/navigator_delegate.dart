@@ -89,7 +89,7 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
     return navigatorManager.popRoute();
   }
 
-  final _controller = MaterialApp.createMaterialHeroController();
+  final _heroController = MaterialApp.createMaterialHeroController();
 
   @override
   Widget build(BuildContext context) => buildNavigator();
@@ -99,10 +99,14 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   /// - [observers] : NavigatorObservers that can react on popping a route
   Widget buildNavigator({
     List<NavigatorObserver> observers = const [],
+    Function(BuildContext)? didUpdatedPages,
   }) =>
       BlocBuilder(
         builder: (context, xayn.NavigatorState state) => _buildNavigator(
-            context: context, state: state, observers: observers),
+            context: context,
+            state: state,
+            observers: observers,
+            didUpdatePages: didUpdatedPages),
         bloc: navigatorManager,
       );
 
@@ -110,14 +114,17 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
     required BuildContext context,
     required xayn.NavigatorState state,
     List<NavigatorObserver> observers = const [],
+    Function(BuildContext context)? didUpdatePages,
   }) {
     if (state.pages.isEmpty) {
       throw "Pushed invalid state to Navigator, needs to have at least one page: $state";
     }
 
+    didUpdatePages?.call(context);
+
     return Navigator(
       key: _navigation,
-      observers: observers + [_controller],
+      observers: observers + [_heroController],
       pages: state.pages
           .map(_buildWidget)
           .map((e) => MaterialPage(child: e))
