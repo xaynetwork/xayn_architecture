@@ -18,7 +18,7 @@ class Page extends StatelessWidget {
 
 final page1 = PageData(
   name: "",
-  builder: (args) => Page(
+  builder: (_, args) => Page(
     argument: args!,
   ),
   arguments: "page1",
@@ -42,7 +42,8 @@ void main() {
     'Initial page is shown when providing a page..',
     build: () => AppNavigation({page1}),
     verify: (AppNavigation manager) {
-      expect(manager.state, xayn.NavigatorState(pages: [page1]));
+      expect(manager.state,
+          xayn.NavigatorState(pages: [page1], source: xayn.Source.navigator));
     },
   );
 
@@ -72,10 +73,13 @@ void main() {
     // ignore: INVALID_USE_OF_PROTECTED_MEMBER
     act: (m) => m.manipulateStack((stack) => stack.push(page2)),
     expect: () => [
-      equals(xayn.NavigatorState(pages: [
-        page1,
-        page2,
-      ]))
+      equals(xayn.NavigatorState(
+        pages: [
+          page1,
+          page2,
+        ],
+        source: xayn.Source.navigator,
+      ))
     ],
   );
 
@@ -85,9 +89,12 @@ void main() {
     // ignore: INVALID_USE_OF_PROTECTED_MEMBER
     act: (m) => m.pop(),
     expect: () => [
-      equals(xayn.NavigatorState(pages: [
-        page1,
-      ]))
+      equals(xayn.NavigatorState(
+        pages: [
+          page1,
+        ],
+        source: xayn.Source.navigator,
+      ))
     ],
   );
 
@@ -97,9 +104,12 @@ void main() {
     // ignore: INVALID_USE_OF_PROTECTED_MEMBER
     act: (m) => m.popRoute(),
     expect: () => [
-      equals(xayn.NavigatorState(pages: [
-        page1,
-      ]))
+      equals(xayn.NavigatorState(
+        pages: [
+          page1,
+        ],
+        source: xayn.Source.navigator,
+      ))
     ],
   );
 
@@ -137,9 +147,12 @@ void main() {
       m.manipulateStack((stack) => stack.replace(page2));
     },
     expect: () => [
-      equals(xayn.NavigatorState(pages: [
-        page2,
-      ]))
+      equals(xayn.NavigatorState(
+        pages: [
+          page2,
+        ],
+        source: xayn.Source.navigator,
+      ))
     ],
   );
 }

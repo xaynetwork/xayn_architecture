@@ -2,15 +2,22 @@ import 'dart:collection';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
-/// The [PageBuilder] build a new Widget out of provided [arguments].
-typedef PageBuilder<T extends Widget, A> = T Function(A? arguments);
+/// The [WidgetBuilder] build a new Widget out of provided [arguments].
+typedef WidgetBuilder<T extends Widget, A> = T Function(
+    BuildContext context, A? arguments);
+
+/// The [PageBuilder] build the [Page] and within the [PageRoute] that
+/// allows to control transitions and custom page route behaviors.
+typedef PageBuilder<T extends Widget> = Page Function(
+    BuildContext context, T widget);
 
 /// Signature of generic, untyped page data.
 typedef UntypedPageData = PageData<Widget, Object>;
 
 /// Signature of a generic, untyped page builder.
-typedef UntypedPageBuilder = PageBuilder<Widget, Object>;
+typedef UntypedPageBuilder = WidgetBuilder<Widget, Object>;
 
 /// Describes the page that will be displayed in on the screen.
 class PageData<T extends Widget, A> extends Equatable {
@@ -22,7 +29,10 @@ class PageData<T extends Widget, A> extends Equatable {
   final bool isInitial;
 
   ///[builder] builds the page widget
-  final PageBuilder<T, A> builder;
+  final WidgetBuilder<T, A> builder;
+
+  /// [pageBuilder] build the [Page] and within the [PageRoute]
+  final PageBuilder? pageBuilder;
 
   /// [arguments] are arbitrary arguments delivered to the builder
   final A? arguments;
@@ -33,15 +43,25 @@ class PageData<T extends Widget, A> extends Equatable {
     required this.builder,
     this.isInitial = false,
     this.arguments,
+    this.pageBuilder,
   })  : _name = name,
         assert(arguments is! List || arguments is UnmodifiableListView,
             "Page arguments needs to be unmodifiable! Provided: $arguments");
+
+  /// Builds the page that will also handle the transition.
+  /// The [MaterialPage] is the default Page.
+  Page buildPage(BuildContext context) {
+    final widget = builder(context, arguments);
+    return pageBuilder == null
+        ? MaterialPage(child: widget)
+        : pageBuilder!(context, widget);
+  }
 
   /// Creates a copy of the current PageData.
   /// The [pendingResult] is always recreated because it should not be copied to another page.
   PageData<T, A> copyWith({
     String? name,
-    PageBuilder<T, A>? builder,
+    WidgetBuilder<T, A>? builder,
     bool? isInitial,
     A? arguments,
   }) =>
@@ -65,5 +85,11 @@ class PageData<T extends Widget, A> extends Equatable {
       );
 
   @override
-  List<Object?> get props => [_name, builder, isInitial, arguments];
+  List<Object?> get props => [
+        _name,
+        builder,
+        isInitial,
+        arguments,
+        pageBuilder,
+      ];
 }
