@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:xayn_architecture/concepts/navigation/navigator_delegate.dart';
 import 'package:xayn_architecture/concepts/navigation/navigator_state.dart'
@@ -157,9 +156,20 @@ class _InitialState extends xayn.NavigatorState {
 /// {@endtemplate}
 abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
     implements RouteRegistration {
-  final List<UntypedPageData> _stack;
-  final Map<UntypedPageData, Completer> _callbacks;
+  final List<UntypedPageData> _stack = [];
+  final Map<UntypedPageData, Completer> _callbacks = {};
   final Set<UntypedPageData> _pages;
+
+  /// The [routeInformationParser] that should be used when implementing the router
+  /// ```dart
+  ///MaterialApp.router(
+  ///       routeInformationParser: appNavigation.routeInformationParser,
+  ///       routerDelegate: xayn.NavigatorDelegate(appNavigation),
+  ///);
+  ///```
+  // https://dart.dev/guides/language/language-tour#late-variables
+  late final RouteInformationParser<xayn.NavigatorState>
+      routeInformationParser = NavigatorRouteInformationParser(this);
 
   /// Mainly useful for testing
   final List<UntypedPageData>? _initialPagesConfiguration;
@@ -170,9 +180,7 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
   NavigatorManager({
     required Set<UntypedPageData> pages,
     List<UntypedPageData>? initialPageConfiguration,
-  })  : _callbacks = {},
-        _stack = [],
-        _pages = pages,
+  })  : _pages = pages,
         _initialPagesConfiguration = initialPageConfiguration,
         super(_InitialState()) {
     _stack.clear();

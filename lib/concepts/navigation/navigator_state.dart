@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:xayn_architecture/concepts/navigation/navigator_manager.dart';
 import 'package:xayn_architecture/concepts/navigation/page_data.dart';
 

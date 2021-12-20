@@ -6,15 +6,14 @@ class PageRegistry {
   static final pageIncrement = xayn.PageData(
     isInitial: true,
     name: "pageIncrement",
-    builder: (args) => PageIncrement(
+    builder: (_, args) => PageIncrement(
       argument: args,
     ),
     arguments: 1,
   );
   static final pageDialog = xayn.PageData(
-    isInitial: true,
     name: "pageDialog",
-    builder: (args) => PageDialog(
+    builder: (_, args) => PageDialog(
       argument: args,
     ),
     arguments: 1,

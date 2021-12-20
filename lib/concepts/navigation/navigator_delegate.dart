@@ -41,9 +41,9 @@ class NavigatorRouteInformationParser
       RouteInformation routeInformation) async {
     var url = Uri.parse(routeInformation.location ?? "/");
 
-    var pages = url.pathSegments.map((e) {
-      return _routeRegistration.mapSegmentToPage(segment: e);
-    }).toList();
+    var pages = url.pathSegments
+        .map((e) => _routeRegistration.mapSegmentToPage(segment: e))
+        .toList();
     if (pages.isEmpty || !pages.first.isInitial) {
       pages = <UntypedPageData>[_routeRegistration.initialPage] + pages;
     }
@@ -103,10 +103,10 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   }) =>
       BlocBuilder(
         builder: (context, xayn.NavigatorState state) => _buildNavigator(
-            context: context,
-            state: state,
-            observers: observers,
-            didUpdatePages: didUpdatedPages),
+          context: context,
+          state: state,
+          observers: observers,
+        ),
         bloc: navigatorManager,
       );
 
@@ -114,21 +114,15 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
     required BuildContext context,
     required xayn.NavigatorState state,
     List<NavigatorObserver> observers = const [],
-    Function(BuildContext context)? didUpdatePages,
   }) {
     if (state.pages.isEmpty) {
       throw "Pushed invalid state to Navigator, needs to have at least one page: $state";
     }
 
-    didUpdatePages?.call(context);
-
     return Navigator(
       key: _navigation,
       observers: observers + [_heroController],
-      pages: state.pages
-          .map(_buildWidget)
-          .map((e) => MaterialPage(child: e))
-          .toList(),
+      pages: state.pages.map((p) => p.buildPage(context)).toList(),
       onPopPage: (route, result) {
         if (!route.didPop(result)) {
           return false;
@@ -144,20 +138,14 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   @override
   GlobalKey<NavigatorState>? get navigatorKey => _navigation;
 
-  T _buildWidget<T extends Widget>(PageData<T, Object> data) {
-    return data.builder(data.arguments);
-  }
-
   @override
   Future<void> setInitialRoutePath(xayn.NavigatorState configuration) {
-    print("ROUTE setInitialRoutePath: $configuration");
     return super.setInitialRoutePath(xayn.NavigatorState(
         pages: configuration.pages, source: xayn.Source.initialization));
   }
 
   @override
   Future<void> setRestoredRoutePath(xayn.NavigatorState configuration) {
-    print("ROUTE setRestoredRoutePath: $configuration");
     return super.setRestoredRoutePath(xayn.NavigatorState(
         pages: configuration.pages, source: xayn.Source.restoration));
   }
@@ -165,11 +153,9 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   @override
   Future<void> setNewRoutePath(xayn.NavigatorState configuration) {
     if (configuration.source == xayn.Source.unknown) {
-      print("ROUTE setNewRoutePath - external: $configuration");
       configuration = xayn.NavigatorState(
           pages: configuration.pages, source: xayn.Source.external);
     }
-    print("restoreState $configuration");
     // ignore: INVALID_USE_OF_PROTECTED_MEMBER
     navigatorManager.restoreState(configuration);
     return SynchronousFuture(null);

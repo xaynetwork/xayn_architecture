@@ -16,11 +16,9 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final parser = xayn.NavigatorRouteInformationParser(_manager);
-    final navigatorDelegate = xayn.NavigatorDelegate(_manager);
     return MaterialApp.router(
-      routeInformationParser: parser,
-      routerDelegate: navigatorDelegate,
+      routeInformationParser: _manager.routeInformationParser,
+      routerDelegate: xayn.NavigatorDelegate(_manager),
       title: 'Navigator Test App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
