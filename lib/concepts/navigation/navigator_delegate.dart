@@ -82,12 +82,6 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   /// with in the current context and can be manipulated by using the [NavigatorManager].
   NavigatorDelegate(this.navigatorManager);
 
-  @override
-  Future<bool> popRoute() {
-    // ignore: INVALID_USE_OF_PROTECTED_MEMBER
-    return navigatorManager.popRoute();
-  }
-
   final _heroController = MaterialApp.createMaterialHeroController();
 
   @override

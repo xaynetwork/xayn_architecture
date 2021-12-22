@@ -74,25 +74,28 @@ class PageDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     PageDialogExitActions exitActions = di.get();
     final count = argument ?? 0;
-    return Scaffold(
-      body: Center(
-          child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text("page $argument"),
-          TextButton(
-              onPressed: () {
-                exitActions.onSubmittedResult(count);
-              },
-              child: Text("Close and Send back $count")),
-        ],
-      )),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          exitActions.onPlusButtonClicked(count + 1);
-        },
-        child: const Icon(Icons.add),
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        body: Center(
+            child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("page $argument"),
+            TextButton(
+                onPressed: () {
+                  exitActions.onSubmittedResult(count);
+                },
+                child: Text("Close and Send back $count")),
+          ],
+        )),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            exitActions.onPlusButtonClicked(count + 1);
+          },
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
