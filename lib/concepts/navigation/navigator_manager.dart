@@ -213,18 +213,6 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
     ));
   }
 
-  /// Should return true when pop is handled
-  /// Called by the Navigator Delegate
-  @protected
-  Future<bool> popRoute() {
-    if (_stack.length <= 1) {
-      return Future.value(false);
-    }
-
-    pop();
-    return Future.value(true);
-  }
-
   /// Called by the Navigator Widget when a restored state or an external
   /// path is pushed to the app
   @protected
