@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:equatable/equatable.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 /// The [WidgetBuilder] build a new Widget out of provided [arguments].
