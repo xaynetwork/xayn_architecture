@@ -4,6 +4,8 @@ import 'dart:collection';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:xayn_architecture/concepts/navigation/navigator_delegate.dart';
+import 'package:xayn_architecture/concepts/navigation/navigator_observer.dart'
+    as xayn;
 import 'package:xayn_architecture/concepts/navigation/navigator_state.dart'
     as xayn;
 import 'package:xayn_architecture/concepts/navigation/page_data.dart';
@@ -33,11 +35,16 @@ class NavigatorException implements Exception {
 /// The [StackManipulation] allows to call multiple methods and create even temporary 'illegal'
 /// states (like replacing the initial page)
 class StackManipulation {
+  final List<xayn.NavigatorObserver> _observers;
   final List<UntypedPageData> _stack;
   final Map<PageData, Completer> _callbacks;
   var _disposed = false;
 
-  StackManipulation._(this._stack, this._callbacks);
+  StackManipulation._(
+    this._stack,
+    this._callbacks,
+    this._observers,
+  );
 
   /// The current page on the stack.
   UntypedPageData? get currentPage => length > 0 ? _stack.last : null;
@@ -60,6 +67,9 @@ class StackManipulation {
       // FIXME result is returned before the state is updated, this could be potentially an issue
       pendingResult.complete(result);
     }
+    for (var observer in _observers) {
+      observer.didPop(_stack.isEmpty ? null : _stack.last, last);
+    }
   }
 
   /// Adds a new Page on top of the current stack.
@@ -67,7 +77,12 @@ class StackManipulation {
   /// @see [pushForResult] if you need a result from a page.
   void push(UntypedPageData page) {
     _checkDisposed();
+    final previous = _stack.isEmpty ? null : _stack.last;
     _stack.add(page);
+
+    for (var observer in _observers) {
+      observer.didPush(_stack.last, previous);
+    }
   }
 
   /// Add a new page on top of the current stack and requests a new result from
@@ -83,7 +98,11 @@ class StackManipulation {
     _checkDisposed();
     final completer = Completer<T?>();
     _callbacks[page] = completer;
+    final previous = _stack.isEmpty ? null : _stack.last;
     _stack.add(page);
+    for (var observer in _observers) {
+      observer.didPush(_stack.last, previous);
+    }
     return completer.future;
   }
 
@@ -158,6 +177,7 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
     implements RouteRegistration {
   final List<UntypedPageData> _stack = [];
   final Map<UntypedPageData, Completer> _callbacks = {};
+  final List<xayn.NavigatorObserver> _observers;
   final Set<UntypedPageData> _pages;
 
   /// The [routeInformationParser] that should be used when implementing the router
@@ -180,8 +200,10 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
   NavigatorManager({
     required Set<UntypedPageData> pages,
     List<UntypedPageData>? initialPageConfiguration,
+    List<xayn.NavigatorObserver>? observers,
   })  : _pages = pages,
         _initialPagesConfiguration = initialPageConfiguration,
+        _observers = observers ?? const [],
         super(_InitialState()) {
     _stack.clear();
     _stack.addAll(computeInitialPages());
@@ -191,7 +213,7 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
   /// Allows to safely manipulate the stack without exposing internals of the manager
   @protected
   T manipulateStack<T>(T Function(StackManipulation stack) batch) {
-    final manipulation = StackManipulation._(_stack, _callbacks);
+    final manipulation = StackManipulation._(_stack, _callbacks, _observers);
     final lastResult = batch(manipulation);
     manipulation._dispose();
     _updateState();
@@ -219,6 +241,9 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
   bool restoreState(xayn.NavigatorState state) {
     // The initial path can be ignored because it comne from the router initialization itself
     if (state.source == xayn.Source.initialization) {
+      for (var element in _observers) {
+        element.init();
+      }
       return false;
     }
 
@@ -230,7 +255,17 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
       _stack.add(element);
     }
     _updateState();
+    for (var element in _observers) {
+      element.restored();
+    }
     return true;
+  }
+
+  /// Update BuildContext in every item of [_observers]
+  void updateContext(BuildContext context) {
+    for (var observer in _observers) {
+      observer.updateContext(context);
+    }
   }
 
   /// Override this to return a different initial page configuration than
