@@ -112,6 +112,8 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
       throw "Pushed invalid state to Navigator, needs to have at least one page: $state";
     }
 
+    navigatorManager.updateContext(context);
+
     return Navigator(
       key: _navigation,
       observers: observers + [_heroController],
