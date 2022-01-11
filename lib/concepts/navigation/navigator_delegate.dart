@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:xayn_architecture/concepts/navigation/navigator_observer.dart';
 import 'package:xayn_architecture/concepts/navigation/navigator_state.dart'
     as xayn;
 import 'package:xayn_architecture/concepts/navigation/page_data.dart';
@@ -75,14 +76,19 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   /// in the same tree.
   final _navigation = GlobalKey<NavigatorState>();
 
+  final List<NavigatorDelegateObserver> _observers;
+
   /// Creates a new NavigatorDelegate.
   ///
   /// In the NavigatorDelegate works in conjunction with the [NavigatorManager]. It implements the
   /// Navigator 2.0 behaviour and renders a set of pages. Those are presented 'declarative'
   /// with in the current context and can be manipulated by using the [NavigatorManager].
-  NavigatorDelegate(this.navigatorManager);
+  NavigatorDelegate(this.navigatorManager,
+      {List<NavigatorDelegateObserver>? observers})
+      : _observers = observers ?? [];
 
   final _heroController = MaterialApp.createMaterialHeroController();
+  xayn.NavigatorState? _lastState;
 
   @override
   Widget build(BuildContext context) => buildNavigator();
@@ -91,7 +97,7 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   /// Can be customized by passing
   /// - [observers] : NavigatorObservers that can react on popping a route
   Widget buildNavigator({
-    List<NavigatorObserver> observers = const [],
+    List<NavigatorDelegateObserver> observers = const [],
     Function(BuildContext)? didUpdatedPages,
   }) =>
       BlocBuilder(
@@ -106,17 +112,18 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
   Navigator _buildNavigator({
     required BuildContext context,
     required xayn.NavigatorState state,
-    List<NavigatorObserver> observers = const [],
+    List<NavigatorDelegateObserver> observers = const [],
   }) {
     if (state.pages.isEmpty) {
       throw "Pushed invalid state to Navigator, needs to have at least one page: $state";
     }
 
-    navigatorManager.updateContext(context);
+    // this should run after build when not awaited
+    _notifyObserversAfterBuild(observers + _observers, context, state);
 
     return Navigator(
       key: _navigation,
-      observers: observers + [_heroController],
+      observers: [_heroController],
       pages: state.pages.map((p) => p.buildPage(context)).toList(),
       onPopPage: (route, result) {
         if (!route.didPop(result)) {
@@ -128,6 +135,20 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
         return true;
       },
     );
+  }
+
+  // based on this comment https://stackoverflow.com/a/51273797/495800
+  // this function will be executed after the build if it runs unawaited.
+  Future<void> _notifyObserversAfterBuild(
+    List<NavigatorDelegateObserver> observers,
+    BuildContext context,
+    xayn.NavigatorState currentState,
+  ) async {
+    final lastState = _lastState;
+    _lastState = currentState;
+    for (var element in observers) {
+      element.didChangeState(context, lastState, currentState);
+    }
   }
 
   @override
