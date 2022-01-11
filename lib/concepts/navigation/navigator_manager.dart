@@ -67,9 +67,7 @@ class StackManipulation {
       // FIXME result is returned before the state is updated, this could be potentially an issue
       pendingResult.complete(result);
     }
-    for (var observer in _observers) {
-      observer.didPop(_stack.isEmpty ? null : _stack.last, last);
-    }
+    _notifyDidPop(_stack.isEmpty ? null : _stack.last, last);
   }
 
   /// Adds a new Page on top of the current stack.
@@ -80,9 +78,7 @@ class StackManipulation {
     final previous = _stack.isEmpty ? null : _stack.last;
     _stack.add(page);
 
-    for (var observer in _observers) {
-      observer.didPush(_stack.last, previous);
-    }
+    _notifyDidPush(_stack.last, previous);
   }
 
   /// Add a new page on top of the current stack and requests a new result from
@@ -100,9 +96,7 @@ class StackManipulation {
     _callbacks[page] = completer;
     final previous = _stack.isEmpty ? null : _stack.last;
     _stack.add(page);
-    for (var observer in _observers) {
-      observer.didPush(_stack.last, previous);
-    }
+    _notifyDidPush(_stack.last, previous);
     return completer.future;
   }
 
@@ -136,6 +130,26 @@ class StackManipulation {
   void _checkDisposed() {
     assert(!_disposed,
         "Tried to use stack manipulation after it was disposed. Are you running the manipulation outside of changeStack method?");
+  }
+
+  void _notifyDidPush(PageData next, PageData? prev) {
+    // We need to find a better way to notify listeners
+    // after the build method was called, but not before
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      for (var observer in _observers) {
+        observer.didPush(next, prev);
+      }
+    });
+  }
+
+  void _notifyDidPop(PageData? next, PageData? prev) {
+    // We need to find a better way to notify listeners
+    // after the build method was called, but not before
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      for (var observer in _observers) {
+        observer.didPop(next, prev);
+      }
+    });
   }
 }
 
@@ -241,9 +255,13 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
   bool restoreState(xayn.NavigatorState state) {
     // The initial path can be ignored because it comne from the router initialization itself
     if (state.source == xayn.Source.initialization) {
-      for (var element in _observers) {
-        element.init();
-      }
+      // We need to find a better way to notify listeners
+      // after the build method was called, but not before
+      WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+        for (var element in _observers) {
+          element.init();
+        }
+      });
       return false;
     }
 
@@ -255,9 +273,13 @@ abstract class NavigatorManager extends Cubit<xayn.NavigatorState>
       _stack.add(element);
     }
     _updateState();
-    for (var element in _observers) {
-      element.restored();
-    }
+    // We need to find a better way to notify listeners
+    // after the build method was called, but not before
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      for (var element in _observers) {
+        element.restored();
+      }
+    });
     return true;
   }
 
