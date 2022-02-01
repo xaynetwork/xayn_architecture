@@ -1,4 +1,4 @@
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:xayn_architecture/xayn_architecture_test.dart';
 
 import '../helpers/use_cases.dart';
@@ -42,6 +42,19 @@ void main() {
         useCaseFailure(throwsArgumentError),
       ],
     );
+
+    useCaseTest(
+      'Can test use cases which yield nothing: ',
+      build: () => EmptyUseCase(),
+      input: [1],
+      expectCount: 0,
+    );
+
+    test('Can test a use case as a Stream', () {
+      final stream = useCaseToStream(const [1, 2, 3], IntToStringUseCase());
+
+      expect(stream, emitsInOrder(['1', '2', '3', emitsDone]));
+    });
   });
 
   group('single output: ', () {

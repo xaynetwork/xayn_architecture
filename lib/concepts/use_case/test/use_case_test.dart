@@ -71,6 +71,7 @@ void useCaseTest<U extends UseCase<In, Out>, In, Out>(
   Function(U useCase)? verify,
   FutureOr<void> Function()? tearDown,
   int? take,
+  int? expectCount,
 }) {
   test.test(description, () async {
     await setUp?.call();
@@ -83,7 +84,7 @@ void useCaseTest<U extends UseCase<In, Out>, In, Out>(
     // ignore: INVALID_USE_OF_PROTECTED_MEMBER
     var stream = Stream.fromIterable(input).asyncExpand(useCase.transaction);
 
-    if (count != null) {
+    if (count != null && count > 0) {
       stream = stream.take(count);
     }
 
@@ -99,6 +100,11 @@ void useCaseTest<U extends UseCase<In, Out>, In, Out>(
     act?.call();
 
     await completer.future;
+
+    if (expectCount != null && expectCount != output.length) {
+      test.fail(
+          'expected [$expectCount] events, but received [${output.length}] instead');
+    }
 
     if (expect != null) {
       test.expect(output, expect);
@@ -169,4 +175,12 @@ class _UseCaseFailure extends test.Matcher {
   @override
   test.Description describe(test.Description description) =>
       description.add('throws exception ').addDescriptionOf(_exception);
+}
+
+/// Converts the use case into a Stream, which allows for testing with
+/// Stream Matchers.
+Stream<Out> useCaseToStream<In, Out>(
+    Iterable<In> input, UseCase<In, Out> useCase) {
+  // ignore: INVALID_USE_OF_PROTECTED_MEMBER
+  return Stream.fromIterable(input).asyncExpand(useCase.transaction);
 }

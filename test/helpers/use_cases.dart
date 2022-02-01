@@ -83,3 +83,10 @@ class MultiOutputWithFailureUseCase extends UseCase<int, String> {
     throw Exception();
   }
 }
+
+class EmptyUseCase extends UseCase<int, int> {
+  @override
+  Stream<int> transaction(int param) async* {
+    // do nothing!
+  }
+}
