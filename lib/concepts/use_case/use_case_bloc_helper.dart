@@ -59,7 +59,7 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   ///       // and no next state will be emitted
   ///       return null;
   ///     });
-  FutureOr<State?> computeState() {}
+  FutureOr<State?> computeState() => null;
 
   /// Schedules a compute state
   /// if [handler] is provided, then this method will be executed

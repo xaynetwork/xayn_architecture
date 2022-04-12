@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:rxdart/src/utils/forwarding_sink.dart';
 // ignore: implementation_imports
 import 'package:rxdart/src/utils/forwarding_stream.dart';
+import 'package:xayn_architecture/concepts/use_case/handlers/fold.dart';
 
 typedef _Transaction<In, Out> = Stream<Out> Function(In);
 
@@ -84,7 +85,11 @@ class _UseCaseSink<In, Out> extends ForwardingSink<In, Out> {
   }
 
   @override
-  void onError(Object error, StackTrace st) => sink.addError(error, st);
+  void onError(Object error, StackTrace st) {
+    if (error is! SilentError) {
+      sink.addError(error, st);
+    }
+  }
 
   @override
   FutureOr<void> onListen() {}

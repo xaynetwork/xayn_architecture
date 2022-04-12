@@ -733,3 +733,6 @@ class ErrorReport {
   /// Returns `null` if no error was added for [either].
   ErrorAndStackTrace? of(Either either) => _errors[either];
 }
+
+/// An error which is thrown in use cases, but ignored in an [ErrorReport]
+class SilentError extends Error {}
