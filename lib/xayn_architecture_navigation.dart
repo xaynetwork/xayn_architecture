@@ -5,4 +5,5 @@ export 'package:xayn_architecture/concepts/navigation/navigator_delegate.dart';
 export 'package:xayn_architecture/concepts/navigation/navigator_manager.dart';
 export 'package:xayn_architecture/concepts/navigation/navigator_observer.dart';
 export 'package:xayn_architecture/concepts/navigation/navigator_state.dart';
+export 'package:xayn_architecture/concepts/navigation/navigator_visitor.dart';
 export 'package:xayn_architecture/concepts/navigation/page_data.dart';
