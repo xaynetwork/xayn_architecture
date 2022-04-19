@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:navigation_history_observer/navigation_history_observer.dart';
 import 'package:xayn_architecture/concepts/navigation/navigator_observer.dart';
 import 'package:xayn_architecture/concepts/navigation/navigator_state.dart'
     as xayn;
@@ -88,6 +89,7 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
       : _observers = observers ?? [];
 
   final _heroController = MaterialApp.createMaterialHeroController();
+  final _history = NavigationHistoryObserver();
   xayn.NavigatorState? _lastState;
 
   @override
@@ -123,7 +125,10 @@ class NavigatorDelegate extends RouterDelegate<xayn.NavigatorState>
 
     return Navigator(
       key: _navigation,
-      observers: [_heroController],
+      observers: [
+        _heroController,
+        _history,
+      ],
       pages: state.pages.map((p) => p.buildPage(context)).toList(),
       onPopPage: (route, result) {
         if (!route.didPop(result)) {
