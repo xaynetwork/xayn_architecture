@@ -52,7 +52,11 @@ class PageData<T extends Widget, A> extends Equatable {
   Page buildPage(BuildContext context) {
     final widget = builder(context, arguments);
     return pageBuilder == null
-        ? MaterialPage(child: widget, name: name, arguments: arguments)
+        ? MaterialPage(
+            child: widget,
+            name: name,
+            arguments: arguments,
+            restorationId: name)
         : pageBuilder!(context, widget);
   }
 
