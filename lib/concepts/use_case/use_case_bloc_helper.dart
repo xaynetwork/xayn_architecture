@@ -96,6 +96,13 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
     return super.close();
   }
 
+  /// Pauses all active subscriptions [consume, pipe]
+  void pauseAllSubscriptions([Future<void>? resumeSignal]) =>
+      _subscriptions.pauseAll();
+
+  /// Resumes all active subscriptions [consume, pipe]
+  void resumeAllSubscriptions() => _subscriptions.resumeAll();
+
   /// Consumes the [useCase] as a `Stream` and wraps the `Sink.add` handler,
   /// which can then be resolved to a `Cubit`'s state.
   ///
