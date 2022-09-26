@@ -114,7 +114,7 @@ mixin UseCaseBlocHelper<State> on BlocBase<State> {
   UseCaseSink<In, Out> pipe<In, Out>(
     UseCase<In, Out> useCase,
   ) {
-    final controller = StreamController<In>(sync: true);
+    final controller = StreamController<In>();
 
     _subjects.add(controller);
 
